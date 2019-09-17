@@ -52,8 +52,8 @@ int main()
 
 #include "types/databuffer.h"
 
-DataBuffer dataSource(10, 1024*1024);
-DataBuffer resultStorage(10, 1024*1024);
+twPro::DataBuffer dataSource(10, 1024*1024);
+twPro::DataBuffer resultStorage(10, 1024*1024);
 
 int sourceDataId = 0;
 std::mutex sd_mutex;
@@ -79,7 +79,7 @@ void createDataToSource()
 
         std::lock_guard<std::mutex> lock(sd_mutex);
 
-        std::shared_ptr<DataUnit> unit = dataSource.producer_popWait();
+        std::shared_ptr<twPro::DataUnit> unit = dataSource.producer_popWait();
         unit->id = ++sourceDataId;
         
         int * val = reinterpret_cast<int*>(unit->ptr);
@@ -96,7 +96,7 @@ void createDataToSource()
 void takeDataFromResult()
 {
     while (true) {
-        std::shared_ptr<const DataUnit> unit = resultStorage.consumer_popWait();
+        std::shared_ptr<const twPro::DataUnit> unit = resultStorage.consumer_popWait();
         int * val = reinterpret_cast<int*>(unit->ptr);
 
         BLOG << "Received id: " << unit->id << ", value: " << *val << ELOG;
@@ -119,7 +119,7 @@ void workerTask()
     while (true) {
         BLOG << std::this_thread::get_id() << " | " << "begins" << ELOG;
 
-        std::shared_ptr<DataUnit> result_unit = resultStorage.producer_popWait();
+        std::shared_ptr<twPro::DataUnit> result_unit = resultStorage.producer_popWait();
 
         if (!result_unit) {
             break;
@@ -127,7 +127,7 @@ void workerTask()
 
         BLOG << std::this_thread::get_id() << " | " << "gotten result unit" << ELOG;
 
-        std::shared_ptr<const DataUnit> task_unit = dataSource.consumer_popWait();
+        std::shared_ptr<const twPro::DataUnit> task_unit = dataSource.consumer_popWait();
 
         if (!task_unit) {
             resultStorage.producer_push(result_unit);

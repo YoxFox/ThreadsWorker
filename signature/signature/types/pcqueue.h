@@ -4,38 +4,42 @@
 #include <memory>
 #include "dataunit.h"
 
-class PCQueue final
-{
-public:
+namespace twPro {
 
-    PCQueue(const size_t capacity) noexcept;
-	~PCQueue() noexcept;
+    class PCQueue final
+    {
+    public:
 
-	/*
-		p - producer queue
-		c - consumer queue
-	*/
+        PCQueue(const size_t capacity) noexcept;
+        ~PCQueue() noexcept;
 
-	/* Thread-safe */
-	void pPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
-	void cPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
+        /*
+            p - producer queue
+            c - consumer queue
+        */
 
-	/* Thread-safe */
-    std::shared_ptr<DataUnit> pPop() noexcept;
-    std::shared_ptr<DataUnit> cPop() noexcept;
+        /* Thread-safe */
+        void pPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
+        void cPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
 
-    /* Common size of both queues */
-    size_t size() const noexcept;
+        /* Thread-safe */
+        std::shared_ptr<DataUnit> pPop() noexcept;
+        std::shared_ptr<DataUnit> cPop() noexcept;
 
-    size_t producerSize() const noexcept;
-    size_t consumerSize() const noexcept;
+        /* Common size of both queues */
+        size_t size() const noexcept;
 
-    bool producerEmpty() const noexcept;
-    bool consumerEmpty() const noexcept;
+        size_t producerSize() const noexcept;
+        size_t consumerSize() const noexcept;
 
-private:
+        bool producerEmpty() const noexcept;
+        bool consumerEmpty() const noexcept;
 
-	std::queue<std::shared_ptr<DataUnit>> m_producerQueue;
-	std::queue<std::shared_ptr<DataUnit>> m_consumerQueue;
+    private:
 
-};
+        std::queue<std::shared_ptr<DataUnit>> m_producerQueue;
+        std::queue<std::shared_ptr<DataUnit>> m_consumerQueue;
+
+    };
+
+}
