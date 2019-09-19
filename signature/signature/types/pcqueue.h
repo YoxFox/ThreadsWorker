@@ -19,12 +19,12 @@ namespace twPro {
         */
 
         /* Thread-safe */
-        void pPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
-        void cPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept;
+        void pPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept;
+        void cPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept;
 
         /* Thread-safe */
-        std::shared_ptr<DataUnit> pPop() noexcept;
-        std::shared_ptr<DataUnit> cPop() noexcept;
+        std::weak_ptr<DataUnit> pPop() noexcept;
+        std::weak_ptr<DataUnit> cPop() noexcept;
 
         /* Common size of both queues */
         size_t size() const noexcept;
@@ -37,8 +37,8 @@ namespace twPro {
 
     private:
 
-        std::queue<std::shared_ptr<DataUnit>> m_producerQueue;
-        std::queue<std::shared_ptr<DataUnit>> m_consumerQueue;
+        std::queue<std::weak_ptr<DataUnit>> m_producerQueue;
+        std::queue<std::weak_ptr<DataUnit>> m_consumerQueue;
 
     };
 

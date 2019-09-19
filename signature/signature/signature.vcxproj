@@ -151,12 +151,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="interfaces\idataconsumer.h" />
+    <ClInclude Include="interfaces\idataproducer.h" />
+    <ClInclude Include="services\filereaderbyparts.h" />
+    <ClInclude Include="services\filewriterbyparts.h" />
     <ClInclude Include="types\databuffer.h" />
     <ClInclude Include="types\dataunit.h" />
     <ClInclude Include="types\pcqueue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="services\filereaderbyparts.cpp" />
+    <ClCompile Include="services\filewriterbyparts.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />
   </ItemGroup>

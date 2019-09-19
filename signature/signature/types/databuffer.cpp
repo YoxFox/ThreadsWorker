@@ -8,14 +8,18 @@ namespace twPro {
         m_pcQueue(_bufferCapacity)
     {
         for (auto idx = 1; idx <= _bufferCapacity; ++idx) {
-            void* ptr = malloc(_bufferUnitSize);
+            
+            DataUnit* unit;
 
-            if (ptr == nullptr) {
+            try {
+                unit = new DataUnit(_bufferUnitSize);
+            }
+            catch (bad_data_unit_alloc &) {
                 clear();
                 throw bad_data_unit_alloc();
             }
 
-            std::shared_ptr<DataUnit> sUnitPtr(new DataUnit(ptr, _bufferUnitSize, 0));
+            std::shared_ptr<DataUnit> sUnitPtr(unit);
             m_pcQueue.pPush(sUnitPtr);
             m_availableUnits.push(sUnitPtr);
             ++m_bufferCapacity;
@@ -46,7 +50,6 @@ namespace twPro {
         });
 
         while (!m_availableUnits.empty()) {
-            std::free(m_availableUnits.top()->ptr);
             m_availableUnits.pop();
         }
 
@@ -61,12 +64,12 @@ namespace twPro {
         return m_pcQueue.producerSize() == m_bufferCapacity;
     }
 
-    std::shared_ptr<DataUnit> DataBuffer::producer_popWait() noexcept
+    std::weak_ptr<DataUnit> DataBuffer::producer_popWait() noexcept
     {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
             if (!m_isAvailable) {
-                return nullptr;
+                return std::weak_ptr<DataUnit>();
             }
         }
 
@@ -79,19 +82,19 @@ namespace twPro {
         // It's for debug: of course we can write "return m_isAvailable ? m_pcQueue.pPop() : nullptr"
 
         if (!m_isAvailable) {
-            return nullptr;
+            return std::weak_ptr<DataUnit>();
         }
 
         // Take the element from the producer queue
         return m_pcQueue.pPop();
     }
 
-    std::shared_ptr<const DataUnit> DataBuffer::consumer_popWait() noexcept
+    std::weak_ptr<DataUnit> DataBuffer::consumer_popWait() noexcept
     {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
             if (!m_isAvailable) {
-                return nullptr;
+                return std::weak_ptr<DataUnit>();
             }
         }
 
@@ -104,14 +107,14 @@ namespace twPro {
         // It's for debug: of course we can write "return m_isAvailable ? m_pcQueue.cPop() : nullptr"
 
         if (!m_isAvailable) {
-            return nullptr;
+            return std::weak_ptr<DataUnit>();
         }
 
         // Take the element from the consumer queue
         return m_pcQueue.cPop();
     }
 
-    void DataBuffer::producer_push(const std::shared_ptr<DataUnit>& _unitPtr) noexcept
+    void DataBuffer::producer_push(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
@@ -124,14 +127,14 @@ namespace twPro {
         m_clear_cv.notify_all();
     }
 
-    void DataBuffer::consumer_push(const std::shared_ptr<const DataUnit>& _unitPtr) noexcept
+    void DataBuffer::consumer_push(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
         // TODO: check if exsists element in the queue
 
         // Push the element to the producer queue (avaliable for producers)
-        m_pcQueue.pPush(std::const_pointer_cast<DataUnit>(_unitPtr));
+        m_pcQueue.pPush(_unitPtr);
 
         m_cv.notify_one();
         m_clear_cv.notify_all();

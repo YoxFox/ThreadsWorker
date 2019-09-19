@@ -51,9 +51,11 @@ int main()
 #include <time.h> 
 
 #include "types/databuffer.h"
+#include "services/filereaderbyparts.h"
+#include "services/filewriterbyparts.h"
 
-twPro::DataBuffer dataSource(10, 1024*1024);
-twPro::DataBuffer resultStorage(10, 1024*1024);
+std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
+std::shared_ptr<twPro::DataBuffer> resultStoragePtr;
 
 int sourceDataId = 0;
 std::mutex sd_mutex;
@@ -68,7 +70,7 @@ void createDataToSource()
         // Creating data
 
         if (sourceDataId > 49) {
-            if (dataSource.isFullAvailable()) {
+            if (dataSourcePtr->isFullAvailable()) {
                 break;
             }
 
@@ -79,7 +81,7 @@ void createDataToSource()
 
         std::lock_guard<std::mutex> lock(sd_mutex);
 
-        std::shared_ptr<twPro::DataUnit> unit = dataSource.producer_popWait();
+        std::shared_ptr<twPro::DataUnit> unit = dataSourcePtr->producer_popWait().lock();
         unit->id = ++sourceDataId;
         
         int * val = reinterpret_cast<int*>(unit->ptr);
@@ -87,31 +89,44 @@ void createDataToSource()
 
         BLOG << "Created id: " << unit->id << ", value: " << *val << ELOG;
 
-        dataSource.producer_push(unit);
+        dataSourcePtr->producer_push(unit);
     }
 
-    dataSource.clear();
+    dataSourcePtr->clear();
+}
+
+void createDataFromFile()
+{
+    twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr);
+    //twPro::FileReaderByParts fileReader("H:\\alita_film.mkv", dataSourcePtr);
+    fileReader.work();
+}
+
+void writeDataToFile()
+{
+    //twPro::FileWriterByParts fileReader("H:\\alita_film_copy.mkv", resultStoragePtr);
+    twPro::FileWriterByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film_copy.mkv", resultStoragePtr);
+    fileReader.work();
 }
 
 void takeDataFromResult()
 {
     while (true) {
-        std::shared_ptr<const twPro::DataUnit> unit = resultStorage.consumer_popWait();
-        int * val = reinterpret_cast<int*>(unit->ptr);
+        std::shared_ptr<twPro::DataUnit> unit = resultStoragePtr->consumer_popWait().lock();
 
-        BLOG << "Received id: " << unit->id << ", value: " << *val << ELOG;
+        BLOG << "Received id: " << unit->id << ", dataSize: " << unit->dataSize << ", mem size: " << unit->size << ELOG;
 
         // Some manipulations
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        resultStorage.consumer_push(unit);
+        resultStoragePtr->consumer_push(unit);
 
         if (unit->id > 49) {
             break;
         }
     }
 
-    resultStorage.clear();
+    resultStoragePtr->clear();
 }
 
 void workerTask()
@@ -119,7 +134,7 @@ void workerTask()
     while (true) {
         BLOG << std::this_thread::get_id() << " | " << "begins" << ELOG;
 
-        std::shared_ptr<twPro::DataUnit> result_unit = resultStorage.producer_popWait();
+        std::shared_ptr<twPro::DataUnit> result_unit = resultStoragePtr->producer_popWait().lock();
 
         if (!result_unit) {
             break;
@@ -127,26 +142,29 @@ void workerTask()
 
         BLOG << std::this_thread::get_id() << " | " << "gotten result unit" << ELOG;
 
-        std::shared_ptr<const twPro::DataUnit> task_unit = dataSource.consumer_popWait();
+        std::shared_ptr<twPro::DataUnit> task_unit = dataSourcePtr->consumer_popWait().lock();
 
         if (!task_unit) {
-            resultStorage.producer_push(result_unit);
+            resultStoragePtr->producer_push(result_unit);
             break;
         }
 
         BLOG << std::this_thread::get_id() << " | " << "gotten souce unit" << ELOG;
 
-        int * task_val_ptr = reinterpret_cast<int*>(task_unit->ptr);
-        int * result_val_ptr = reinterpret_cast<int*>(result_unit->ptr);
+ //       int * task_val_ptr = reinterpret_cast<int*>(task_unit->ptr);
+ //       int * result_val_ptr = reinterpret_cast<int*>(result_unit->ptr);
+ //       *result_val_ptr = *task_val_ptr + 5;
 
-        *result_val_ptr = *task_val_ptr + 5;
+        std::memcpy(result_unit->ptr, task_unit->ptr, task_unit->dataSize);
+
         result_unit->id = task_unit->id;
+        result_unit->dataSize = task_unit->dataSize;
 
         // Very difficult task
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-        dataSource.consumer_push(task_unit);
-        resultStorage.producer_push(result_unit);
+        dataSourcePtr->consumer_push(task_unit);
+        resultStoragePtr->producer_push(result_unit);
 
         BLOG << std::this_thread::get_id() << " | " << "ends" << ELOG;
     }
@@ -157,6 +175,11 @@ void workerTask()
 int main()
 {
     srand(time(NULL));
+    dataSourcePtr.reset(new twPro::DataBuffer(10, 1024 * 1024));
+    resultStoragePtr.reset(new twPro::DataBuffer(10, 1024 * 1024));
+
+//    std::thread tc(createDataFromFile);
+//    std::thread tr(writeDataToFile);
 
     std::thread tc(createDataToSource);
     std::thread tr(takeDataFromResult);

@@ -10,35 +10,35 @@ namespace twPro {
     {
     }
 
-    void PCQueue::pPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept
+    void PCQueue::pPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept
     {
         m_producerQueue.push(_valPtr);
     }
 
-    void PCQueue::cPush(const std::shared_ptr<DataUnit> & _valPtr) noexcept
+    void PCQueue::cPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept
     {
         m_consumerQueue.push(_valPtr);
     }
-
-    std::shared_ptr<DataUnit> PCQueue::pPop() noexcept
+     
+    std::weak_ptr<DataUnit> PCQueue::pPop() noexcept
     {
         if (m_producerQueue.empty()) {
-            return nullptr;
+            return std::weak_ptr<DataUnit>();
         }
 
-        std::shared_ptr<DataUnit> res = m_producerQueue.front();
+        std::weak_ptr<DataUnit> res = m_producerQueue.front();
         m_producerQueue.pop();
 
         return res;
     }
 
-    std::shared_ptr<DataUnit> PCQueue::cPop() noexcept
+    std::weak_ptr<DataUnit> PCQueue::cPop() noexcept
     {
         if (m_consumerQueue.empty()) {
-            return nullptr;
+            return std::weak_ptr<DataUnit>();
         }
 
-        std::shared_ptr<DataUnit> res = m_consumerQueue.front();
+        std::weak_ptr<DataUnit> res = m_consumerQueue.front();
         m_consumerQueue.pop();
 
         return res;

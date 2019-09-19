@@ -10,11 +10,6 @@
 
 namespace twPro {
 
-    class bad_data_unit_alloc : public std::bad_alloc {
-    public:
-        explicit bad_data_unit_alloc() : std::bad_alloc() {}
-    };
-
     class DataBuffer final
     {
     public:
@@ -29,12 +24,12 @@ namespace twPro {
         // It means all units locate in the producer queue (all resources available for producers)
         bool isFullAvailable() const noexcept;
 
-        // If it returns nullptr, it means the DataBuffer doesn't have data anymore
-        std::shared_ptr<DataUnit> producer_popWait() noexcept;
-        std::shared_ptr<const DataUnit> consumer_popWait() noexcept;
+        // If it returns empty pointer, it means the DataBuffer doesn't have data anymore
+        std::weak_ptr<DataUnit> producer_popWait() noexcept;
+        std::weak_ptr<DataUnit> consumer_popWait() noexcept;
 
-        void producer_push(const std::shared_ptr<DataUnit> & _unitPtr) noexcept;
-        void consumer_push(const std::shared_ptr<const DataUnit> & _unitPtr) noexcept;
+        void producer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+        void consumer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
 
     private:
 
