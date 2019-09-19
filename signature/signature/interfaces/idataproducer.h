@@ -13,7 +13,7 @@ namespace twPro {
 
         // Just stop the work, work() method returns the control as soon as possible. 
         // The work can be countinued by calling work() again.
-        virtual void stop() = 0;
+        virtual void stop() noexcept = 0;
 
         // True if the data producing is done, otherwise false.
         // If true, the work() method do nothing and returns immediately.

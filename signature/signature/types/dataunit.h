@@ -30,8 +30,8 @@ namespace twPro {
     };
 
     template<typename Allocator>
-    inline DataUnit_alloc<Allocator>::DataUnit_alloc(size_t _size, const Allocator & a) :
-        ptr(m_allocator.allocate(_size)), size(_size), dataSize(_size), id(0), m_allocator(a)
+    inline DataUnit_alloc<Allocator>::DataUnit_alloc(size_t _size, const Allocator & _a) :
+        ptr(m_allocator.allocate(_size)), size(_size), dataSize(_size), id(0), m_allocator(_a)
     {
         if (!this->ptr) {
             throw bad_data_unit_alloc();

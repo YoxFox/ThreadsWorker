@@ -71,7 +71,7 @@ namespace twPro {
         m_isDone = true;
     }
 
-    void FileReaderByParts::stop()
+    void FileReaderByParts::stop() noexcept
     {
         m_isStopped.store(true);
     }

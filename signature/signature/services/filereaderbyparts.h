@@ -24,7 +24,7 @@ namespace twPro {
 
         // Just stop the work, work() method returns the control as soon as possible. 
         // The work can be countinued by calling work() again.
-        void stop() override;
+        void stop() noexcept override;
 
         // True if the data producing is done, otherwise false.
         // If true, the work() method do nothing and returns immediately.

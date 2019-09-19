@@ -2,13 +2,13 @@
 
 namespace twPro {
 
-    class IDataConsumer
+    class IWorker
     {
     public:
 
-        virtual ~IDataConsumer() {}
+        virtual ~IWorker() {}
 
-        // Working with consuming some data. It takes all thread time.
+        // It takes all thread time.
         virtual void work() = 0;
 
         // Just stop the work, work() method returns the control as soon as possible. 

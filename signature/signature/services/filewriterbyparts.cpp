@@ -46,7 +46,7 @@ namespace twPro {
         }
     }
 
-    void FileWriterByParts::stop()
+    void FileWriterByParts::stop() noexcept
     {
         m_isStopped.store(true);
     }

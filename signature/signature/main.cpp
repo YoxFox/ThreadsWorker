@@ -53,9 +53,11 @@ int main()
 #include "types/databuffer.h"
 #include "services/filereaderbyparts.h"
 #include "services/filewriterbyparts.h"
+#include "services/workers/md5hashworker.h"
 
 std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
 std::shared_ptr<twPro::DataBuffer> resultStoragePtr;
+std::shared_ptr<twPro::IWorker> worker;
 
 int sourceDataId = 0;
 std::mutex sd_mutex;
@@ -175,17 +177,20 @@ void workerTask()
 int main()
 {
     srand(time(NULL));
-    dataSourcePtr.reset(new twPro::DataBuffer(10, 1024 * 1024));
-    resultStoragePtr.reset(new twPro::DataBuffer(10, 1024 * 1024));
+    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024*1024));
+    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
+    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
 
-//    std::thread tc(createDataFromFile);
-//    std::thread tr(writeDataToFile);
+    std::thread tc(createDataFromFile);
+    std::thread tr(writeDataToFile);
 
-    std::thread tc(createDataToSource);
-    std::thread tr(takeDataFromResult);
+//    std::thread tc(createDataToSource);
+//    std::thread tr(takeDataFromResult);
 
-    std::thread t1(workerTask), t2(workerTask), t3(workerTask), t4(workerTask), t5(workerTask);
+    std::thread t1(&twPro::IWorker::work, worker), t2(&twPro::IWorker::work, worker), t3(&twPro::IWorker::work, worker), t4(&twPro::IWorker::work, worker), t5(&twPro::IWorker::work, worker),
+    t6(&twPro::IWorker::work, worker), t7(&twPro::IWorker::work, worker), t8(&twPro::IWorker::work, worker), t9(&twPro::IWorker::work, worker), t10(&twPro::IWorker::work, worker);
 
     tc.join(); tr.join();
     t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
+    t6.join(); t7.join(); t8.join(); t9.join(); t10.join();
 }
