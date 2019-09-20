@@ -100,6 +100,7 @@ void createDataToSource()
 void createDataFromFile()
 {
     twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr);
+    //twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr);
     //twPro::FileReaderByParts fileReader("H:\\alita_film.mkv", dataSourcePtr);
     fileReader.work();
 }
@@ -107,7 +108,7 @@ void createDataFromFile()
 void writeDataToFile()
 {
     //twPro::FileWriterByParts fileReader("H:\\alita_film_copy.mkv", resultStoragePtr);
-    twPro::FileWriterByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film_copy.mkv", resultStoragePtr);
+    twPro::FileWriterByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.sign", resultStoragePtr);
     fileReader.work();
 }
 
@@ -177,7 +178,7 @@ void workerTask()
 int main()
 {
     srand(time(NULL));
-    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024*1024));
+    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
     resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
     worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
 

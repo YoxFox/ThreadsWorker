@@ -1,7 +1,6 @@
 #include "md5hashworker.h"
 
-#include <boost/uuid/detail/md5.hpp>
-#include <boost/algorithm/hex.hpp>
+#include "../../3rdparty/md5.h"
 
 namespace twPro {
 
@@ -27,7 +26,7 @@ namespace twPro {
             //    return;
             //}
 
-            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->producer_popWait().lock();
+            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->producer_popWait(100).lock();
 
             if (!result_unit) {
                 break;
@@ -38,7 +37,7 @@ namespace twPro {
                 break;
             }
 
-            std::shared_ptr<twPro::DataUnit> task_unit = m_dataProducer->consumer_popWait().lock();
+            std::shared_ptr<twPro::DataUnit> task_unit = m_dataProducer->consumer_popWait(100).lock();
 
             if (!task_unit) {
                 m_resultStorage->producer_push(result_unit);
@@ -62,15 +61,11 @@ namespace twPro {
 
     void MD5HashWorker::calculateHashValue(const std::shared_ptr<const twPro::DataUnit>& _dataUnit, const std::shared_ptr<twPro::DataUnit>& _resultUnit) const
     {
-        boost::uuids::detail::md5 hash;
-        boost::uuids::detail::md5::digest_type digest;
+        char* inputCharArray = reinterpret_cast<char*>(_dataUnit->ptr);
+        char* outputCharArray = reinterpret_cast<char*>(_resultUnit->ptr);
 
-        hash.process_bytes(_dataUnit->ptr, _dataUnit->dataSize);
-        hash.get_digest(digest);
-
-        const auto charDigest = reinterpret_cast<const char *>(&digest);
-        char* res_ptr = reinterpret_cast<char*>(_resultUnit->ptr);
-        boost::algorithm::hex(charDigest, charDigest + sizeof(boost::uuids::detail::md5::digest_type), res_ptr);
+        twPro_3rd::bzflag::MD5 hash_class(inputCharArray, _dataUnit->dataSize);
+        hash_class.hexdigest(outputCharArray);
     }
 
 }

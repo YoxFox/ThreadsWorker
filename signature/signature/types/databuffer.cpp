@@ -64,7 +64,7 @@ namespace twPro {
         return m_pcQueue.producerSize() == m_bufferCapacity;
     }
 
-    std::weak_ptr<DataUnit> DataBuffer::producer_popWait() noexcept
+    std::weak_ptr<DataUnit> DataBuffer::producer_popWait(const long long _waitMilliseconds) noexcept
     {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
@@ -75,7 +75,7 @@ namespace twPro {
 
         std::unique_lock<std::mutex> lk(m_pc_mutex);
 
-        m_cv.wait(lk, [this] {
+        m_cv.wait_for(lk, std::chrono::milliseconds(_waitMilliseconds), [this] {
             return !m_isAvailable || !m_pcQueue.producerEmpty();
         });
 
@@ -89,7 +89,7 @@ namespace twPro {
         return m_pcQueue.pPop();
     }
 
-    std::weak_ptr<DataUnit> DataBuffer::consumer_popWait() noexcept
+    std::weak_ptr<DataUnit> DataBuffer::consumer_popWait(const long long _waitMilliseconds) noexcept
     {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
@@ -100,7 +100,7 @@ namespace twPro {
 
         std::unique_lock<std::mutex> lk(m_pc_mutex);
 
-        m_cv.wait(lk, [this] {
+        m_cv.wait_for(lk, std::chrono::milliseconds(_waitMilliseconds), [this] {
             return !m_isAvailable || !m_pcQueue.consumerEmpty();
         });
 
