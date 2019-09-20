@@ -160,6 +160,7 @@
     <ClInclude Include="services\workers\md5hashworker.h" />
     <ClInclude Include="types\databuffer.h" />
     <ClInclude Include="types\dataunit.h" />
+    <ClInclude Include="types\eventhandler.h" />
     <ClInclude Include="types\pcqueue.h" />
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +170,7 @@
     <ClCompile Include="services\filewriterbyparts.cpp" />
     <ClCompile Include="services\workers\md5hashworker.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
+    <ClCompile Include="types\eventhandler.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

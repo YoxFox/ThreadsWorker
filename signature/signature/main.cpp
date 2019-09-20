@@ -64,7 +64,7 @@ std::atomic_bool stopFlag = false;
 int sourceDataId = 0;
 std::mutex sd_mutex;
 
-std::mutex log_mutex;
+static std::mutex log_mutex;
 #define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
 #define ELOG "\n";}
 
@@ -181,8 +181,48 @@ void workerTask()
     BLOG << "===> Task is done for " << std::this_thread::get_id() << ELOG;
 }
 
+#include "types/eventhandler.h"
+
+EventHandler<unsigned long long> eHandler(1);
+
+int sFooVal = 0;
+std::atomic_bool stopVal = false;
+void someFoo()
+{
+    while (!stopVal) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        BLOG << "generated: " << sFooVal << ELOG;
+        eHandler.notify(HEvent<unsigned long long>(sFooVal));
+        ++sFooVal;
+
+        if (sFooVal > 12) {
+            return;
+        }
+    }
+}
+
 int main()
 {
+    std::thread tFoo(someFoo);
+
+    eHandler.listen([](const HEvent<unsigned long long> & _event) -> bool {
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+        BLOG << "catched: " << _event.value << ELOG;
+
+        if (_event.value > 10) {
+            stopVal = true;
+            return true;
+        }
+
+        return false;
+    });
+
+    tFoo.join();
+    return 0;
+    // =========
+
     srand(time(NULL));
     dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
     resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
