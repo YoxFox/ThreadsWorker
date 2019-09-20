@@ -13,12 +13,11 @@ namespace twPro {
         MD5HashWorker(const std::shared_ptr<DataBuffer> & _dataProducer, const std::shared_ptr<DataBuffer> & _resultStorage);
         ~MD5HashWorker();
 
-        // It takes all thread time.
-        void work() override;
-
-        // Just stop the work, work() method returns the control as soon as possible. 
-        // The work can be countinued by calling work() again.
-        void stop() noexcept override;
+        // It takes all thread time. 
+        // It can be multithreadable, it can be called by different trhreads many times.
+        // It returns the control for thread by the stop flag or by some exception.
+        // Stop flag: TRUE is STOP, FALSE is continue
+        void work(std::atomic_bool & _stopFlag) override;
 
     private:
 

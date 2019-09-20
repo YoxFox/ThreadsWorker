@@ -4,6 +4,7 @@
 
 namespace twPro {
 
+    static long long UNIT_WAIT_TIMEOUT_MS = 100;
     static size_t OUTPUT_DATA_LENGTH = 32; // This worker creates 32 hex type values of the MD5 hash, not 16 bytes of the MD5 hash value
 
     MD5HashWorker::MD5HashWorker(const std::shared_ptr<DataBuffer> & _dataProducer, const std::shared_ptr<DataBuffer> & _resultStorage) :
@@ -16,20 +17,16 @@ namespace twPro {
     {
     }
 
-    void MD5HashWorker::work()
+    void MD5HashWorker::work(std::atomic_bool & _stopFlag)
     {
         m_isStopped.store(false);
 
-        while (true) {
+        while (!_stopFlag.load()) {
 
-            //if (m_isStopped.load()) {
-            //    return;
-            //}
-
-            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->producer_popWait(100).lock();
+            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->producer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!result_unit) {
-                break;
+                continue;
             }
 
             if (result_unit->size < OUTPUT_DATA_LENGTH) {
@@ -37,11 +34,11 @@ namespace twPro {
                 break;
             }
 
-            std::shared_ptr<twPro::DataUnit> task_unit = m_dataProducer->consumer_popWait(100).lock();
+            std::shared_ptr<twPro::DataUnit> task_unit = m_dataProducer->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!task_unit) {
                 m_resultStorage->producer_push(result_unit);
-                break;
+                continue;
             }
 
             calculateHashValue(task_unit, result_unit);
@@ -52,11 +49,6 @@ namespace twPro {
             m_dataProducer->consumer_push(task_unit);
             m_resultStorage->producer_push(result_unit);
         }
-    }
-
-    void MD5HashWorker::stop() noexcept
-    {
-        // DO NOTHING
     }
 
     void MD5HashWorker::calculateHashValue(const std::shared_ptr<const twPro::DataUnit>& _dataUnit, const std::shared_ptr<twPro::DataUnit>& _resultUnit) const

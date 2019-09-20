@@ -2,6 +2,8 @@
 
 namespace twPro {
 
+    static long long UNIT_WAIT_TIMEOUT_MS = 100;
+
     FileWriterByParts::FileWriterByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
         m_isStopped(true),
         m_buffer(_buffer)
@@ -29,7 +31,7 @@ namespace twPro {
                 return;
             }
 
-            std::shared_ptr<twPro::DataUnit> unit = m_buffer->consumer_popWait().lock();
+            std::shared_ptr<twPro::DataUnit> unit = m_buffer->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!unit) {
                 // throw or ...

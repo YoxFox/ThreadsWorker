@@ -59,6 +59,8 @@ std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
 std::shared_ptr<twPro::DataBuffer> resultStoragePtr;
 std::shared_ptr<twPro::IWorker> worker;
 
+std::atomic_bool stopFlag = false;
+
 int sourceDataId = 0;
 std::mutex sd_mutex;
 
@@ -83,7 +85,7 @@ void createDataToSource()
 
         std::lock_guard<std::mutex> lock(sd_mutex);
 
-        std::shared_ptr<twPro::DataUnit> unit = dataSourcePtr->producer_popWait().lock();
+        std::shared_ptr<twPro::DataUnit> unit = dataSourcePtr->producer_popWait(100).lock();
         unit->id = ++sourceDataId;
         
         int * val = reinterpret_cast<int*>(unit->ptr);
@@ -112,10 +114,14 @@ void writeDataToFile()
     fileReader.work();
 }
 
+void work() {
+    worker->work(stopFlag);
+}
+
 void takeDataFromResult()
 {
     while (true) {
-        std::shared_ptr<twPro::DataUnit> unit = resultStoragePtr->consumer_popWait().lock();
+        std::shared_ptr<twPro::DataUnit> unit = resultStoragePtr->consumer_popWait(100).lock();
 
         BLOG << "Received id: " << unit->id << ", dataSize: " << unit->dataSize << ", mem size: " << unit->size << ELOG;
 
@@ -137,7 +143,7 @@ void workerTask()
     while (true) {
         BLOG << std::this_thread::get_id() << " | " << "begins" << ELOG;
 
-        std::shared_ptr<twPro::DataUnit> result_unit = resultStoragePtr->producer_popWait().lock();
+        std::shared_ptr<twPro::DataUnit> result_unit = resultStoragePtr->producer_popWait(100).lock();
 
         if (!result_unit) {
             break;
@@ -145,7 +151,7 @@ void workerTask()
 
         BLOG << std::this_thread::get_id() << " | " << "gotten result unit" << ELOG;
 
-        std::shared_ptr<twPro::DataUnit> task_unit = dataSourcePtr->consumer_popWait().lock();
+        std::shared_ptr<twPro::DataUnit> task_unit = dataSourcePtr->consumer_popWait(100).lock();
 
         if (!task_unit) {
             resultStoragePtr->producer_push(result_unit);
@@ -188,8 +194,8 @@ int main()
 //    std::thread tc(createDataToSource);
 //    std::thread tr(takeDataFromResult);
 
-    std::thread t1(&twPro::IWorker::work, worker), t2(&twPro::IWorker::work, worker), t3(&twPro::IWorker::work, worker), t4(&twPro::IWorker::work, worker), t5(&twPro::IWorker::work, worker),
-    t6(&twPro::IWorker::work, worker), t7(&twPro::IWorker::work, worker), t8(&twPro::IWorker::work, worker), t9(&twPro::IWorker::work, worker), t10(&twPro::IWorker::work, worker);
+    std::thread t1(work), t2(work), t3(work), t4(work), t5(work),
+    t6(work), t7(work), t8(work), t9(work), t10(work);
 
     tc.join(); tr.join();
     t1.join(); t2.join(); t3.join(); t4.join(); t5.join();

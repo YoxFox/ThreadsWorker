@@ -18,7 +18,6 @@ namespace twPro {
         // True if the data producing is done, otherwise false.
         // If true, the work() method do nothing and returns immediately.
         virtual bool isDone() const noexcept = 0;
-
     };
 
 }

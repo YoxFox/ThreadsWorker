@@ -4,6 +4,8 @@
 
 namespace twPro {
 
+    static long long UNIT_WAIT_TIMEOUT_MS = 100;
+
     FileReaderByParts::FileReaderByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
         m_isDone(false), m_isStopped(true), m_idPart(0), m_fileLength(0),
         m_buffer(_buffer), m_stream(_filePath, std::ifstream::binary)
@@ -33,7 +35,7 @@ namespace twPro {
                 return;
             }
 
-            std::shared_ptr<twPro::DataUnit> unit = m_buffer->producer_popWait().lock();
+            std::shared_ptr<twPro::DataUnit> unit = m_buffer->producer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!unit) {
                 // throw or ...
