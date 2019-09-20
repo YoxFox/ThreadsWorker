@@ -5,7 +5,7 @@ namespace twPro {
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
 
     FileWriterByParts::FileWriterByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
-        m_isStopped(true),
+        m_consumedDataLength(0),
         m_buffer(_buffer)
     {
         m_stream.open(_filePath, std::ifstream::binary);
@@ -20,22 +20,16 @@ namespace twPro {
         m_stream.close();
     }
 
-    void FileWriterByParts::work()
+    void FileWriterByParts::work(std::atomic_bool & _stopFlag)
     {
         std::lock_guard<std::mutex> lock(work_mutex);
-        m_isStopped.store(false);
 
-        while (true) {
-
-            if (m_isStopped.load()) {
-                return;
-            }
+        while (!_stopFlag.load()) {
 
             std::shared_ptr<twPro::DataUnit> unit = m_buffer->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!unit) {
-                // throw or ...
-                break;
+                continue;
             }
 
             size_t offset = unit->id * unit->size;
@@ -44,13 +38,14 @@ namespace twPro {
             // write
             m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
 
+            m_consumedDataLength += unit->dataSize;
             m_buffer->consumer_push(unit);
         }
     }
 
-    void FileWriterByParts::stop() noexcept
+    unsigned long long FileWriterByParts::currentConsumedDataLength() const noexcept
     {
-        m_isStopped.store(true);
+        return m_consumedDataLength.load();
     }
 
 }

@@ -20,18 +20,15 @@ namespace twPro {
         ~FileWriterByParts() override;
 
         // Working with producing some data. It takes all thread time.
-        void work() override;
+        void work(std::atomic_bool & _stopFlag) override;
 
-        // Just stop the work, work() method returns the control as soon as possible. 
-        // The work can be countinued by calling work() again.
-        void stop() noexcept override;
+        unsigned long long currentConsumedDataLength() const noexcept override;
 
     private:
 
-        std::atomic_bool m_isStopped;
-
         std::mutex work_mutex;
 
+        std::atomic_ullong m_consumedDataLength;
         std::shared_ptr<twPro::DataBuffer> m_buffer;
         std::ofstream m_stream;
 

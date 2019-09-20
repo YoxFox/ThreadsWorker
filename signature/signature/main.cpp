@@ -111,7 +111,7 @@ void writeDataToFile()
 {
     //twPro::FileWriterByParts fileReader("H:\\alita_film_copy.mkv", resultStoragePtr);
     twPro::FileWriterByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.sign", resultStoragePtr);
-    fileReader.work();
+    fileReader.work(stopFlag);
 }
 
 void work() {
