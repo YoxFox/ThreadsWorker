@@ -19,23 +19,26 @@ namespace twPro {
         FileReaderByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer);
         ~FileReaderByParts() override;
 
-        // Working with producing some data. It takes all thread time.
-        void work() override;
-
-        // Just stop the work, work() method returns the control as soon as possible. 
-        // The work can be countinued by calling work() again.
-        void stop() noexcept override;
+        // It takes all thread time. 
+        // It can be multithreadable, it can be called by different trhreads many times.
+        // It returns the control for thread by the stop flag or by some exception.
+        // Stop flag: TRUE is STOP, FALSE is continue
+        void work(std::atomic_bool & _stopFlag) override;
 
         // True if the data producing is done, otherwise false.
         // If true, the work() method do nothing and returns immediately.
         bool isDone() const noexcept override;
 
+        unsigned long long currentProducedDataLength() const noexcept;
+        unsigned long long totalDataLength() const noexcept; // It returns max(return_type) for infinity data
+
     private:
 
         std::atomic_bool m_isDone;
         std::atomic_bool m_isStopped;
-        unsigned __int64 m_idPart;
-        unsigned __int64 m_fileLength;
+        unsigned long long m_idPart;
+        std::atomic_ullong m_producedDataLength;
+        std::atomic_ullong m_fileLength;
 
         std::mutex work_mutex;
 

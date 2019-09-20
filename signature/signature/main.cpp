@@ -104,7 +104,7 @@ void createDataFromFile()
     twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr);
     //twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr);
     //twPro::FileReaderByParts fileReader("H:\\alita_film.mkv", dataSourcePtr);
-    fileReader.work();
+    fileReader.work(stopFlag);
 }
 
 void writeDataToFile()
