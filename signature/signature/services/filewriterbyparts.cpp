@@ -1,5 +1,7 @@
 #include "filewriterbyparts.h"
 
+#include <iostream>
+
 namespace twPro {
 
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
@@ -17,6 +19,7 @@ namespace twPro {
 
     FileWriterByParts::~FileWriterByParts()
     {
+        std::cout << __FUNCTION__ << "\n";
         m_stream.close();
     }
 
@@ -40,12 +43,12 @@ namespace twPro {
 
             m_consumedDataLength += unit->dataSize;
             m_buffer->consumer_push(unit);
+            eventHandler_currentConsumedData_notify(HEvent<unsigned long long>(m_consumedDataLength));
         }
     }
 
-    unsigned long long FileWriterByParts::currentConsumedDataLength() const noexcept
+    unsigned long long FileWriterByParts::currentConsumedData() const noexcept
     {
         return m_consumedDataLength.load();
     }
-
 }

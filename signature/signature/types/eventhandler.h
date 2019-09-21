@@ -21,6 +21,12 @@ public:
     EventHandler(const size_t _eventQueueSize = 10) noexcept : m_eventQueueSize(_eventQueueSize) {}
     ~EventHandler() noexcept {}
 
+    size_t currentQueueSize() const 
+    {
+        std::lock_guard<std::mutex> lock(m_queue_mutex);
+        return m_eventQueue.size();
+    }
+
     void notify(const HEvent<T> & _event) noexcept
     {
         std::lock_guard<std::mutex> lock(m_queue_mutex);
@@ -77,9 +83,28 @@ private:
     std::queue<HEvent<T>> m_eventQueue;
     std::condition_variable m_cv;
 
-    std::mutex m_queue_mutex;
+    mutable std::mutex m_queue_mutex;
     std::mutex m_cv_mutex;
 
     size_t m_eventQueueSize;
 
 };
+
+#define I_EVENT_HANDLER_MEMBER(name, T) \
+    virtual void setEventHandler_ ## name ## (std::shared_ptr<EventHandler<T>> & _eventHandler) noexcept = 0; \
+
+#define EVENT_HANDLER_MEMBER(name, T) \
+public: \
+    void setEventHandler_ ## name ## (std::shared_ptr<EventHandler<T>> & _eventHandler) noexcept \
+    { \
+        m_eventHandlers_ ## name ## .push_back(_eventHandler); \
+    } \
+private: \
+    void eventHandler_ ## name ## _notify(const HEvent<T> & _e) \
+    { \
+        for ( auto handler : m_eventHandlers_ ## name ) { \
+            handler->notify(_e); \
+        } \
+    } \
+    std::vector<std::shared_ptr<EventHandler<T>>> m_eventHandlers_ ## name; \
+public:

@@ -17,11 +17,11 @@ namespace twPro {
         // get length
         m_stream.seekg(0, std::ios_base::end);
         m_fileLength = m_stream.tellg();
-        std::cout << "File length: " << m_fileLength << "\n";
     }
 
     FileReaderByParts::~FileReaderByParts()
     {
+        std::cout << __FUNCTION__ << "\n";
     }
 
     void FileReaderByParts::work(std::atomic_bool & _stopFlag)
@@ -43,6 +43,7 @@ namespace twPro {
             size_t offset = m_idPart * unit->size;
 
             if (offset >= m_fileLength) {
+                m_buffer->producer_pushNotUsed(unit);
                 break;
             }
 
@@ -62,6 +63,7 @@ namespace twPro {
 
             ++m_idPart;
             m_producedDataLength += blockLength;
+            eventHandler_currentProducedData_notify(HEvent<unsigned long long>(m_producedDataLength));
         }
 
         if (m_producedDataLength >= m_fileLength) {
@@ -74,12 +76,12 @@ namespace twPro {
         return m_isDone.load();
     }
 
-    unsigned long long FileReaderByParts::currentProducedDataLength() const noexcept
+    unsigned long long FileReaderByParts::currentProducedData() const noexcept
     {
         return m_producedDataLength.load();
     }
 
-    unsigned long long FileReaderByParts::totalDataLength() const noexcept
+    unsigned long long FileReaderByParts::totalData() const noexcept
     {
         return m_fileLength.load();
     }

@@ -133,7 +133,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -170,7 +170,6 @@
     <ClCompile Include="services\filewriterbyparts.cpp" />
     <ClCompile Include="services\workers\md5hashworker.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
-    <ClCompile Include="types\eventhandler.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

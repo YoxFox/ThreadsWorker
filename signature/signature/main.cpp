@@ -55,6 +55,9 @@ int main()
 #include "services/filewriterbyparts.h"
 #include "services/workers/md5hashworker.h"
 
+std::shared_ptr<twPro::FileReaderByParts> fileReader;
+std::shared_ptr<twPro::FileWriterByParts> fileWriter;
+
 std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
 std::shared_ptr<twPro::DataBuffer> resultStoragePtr;
 std::shared_ptr<twPro::IWorker> worker;
@@ -68,176 +71,114 @@ static std::mutex log_mutex;
 #define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
 #define ELOG "\n";}
 
-void createDataToSource()
-{
-    while (true) {
-        // Creating data
-
-        if (sourceDataId > 49) {
-            if (dataSourcePtr->isFullAvailable()) {
-                break;
-            }
-
-            continue;
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        std::lock_guard<std::mutex> lock(sd_mutex);
-
-        std::shared_ptr<twPro::DataUnit> unit = dataSourcePtr->producer_popWait(100).lock();
-        unit->id = ++sourceDataId;
-        
-        int * val = reinterpret_cast<int*>(unit->ptr);
-        *val = rand() % 1000;
-
-        BLOG << "Created id: " << unit->id << ", value: " << *val << ELOG;
-
-        dataSourcePtr->producer_push(unit);
-    }
-
-    dataSourcePtr->clear();
-}
-
 void createDataFromFile()
 {
-    twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr);
-    //twPro::FileReaderByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr);
-    //twPro::FileReaderByParts fileReader("H:\\alita_film.mkv", dataSourcePtr);
-    fileReader.work(stopFlag);
+    BLOG << "Reader started" << ELOG;
+    fileReader->work(stopFlag);
+    BLOG << "Reader ended" << ELOG;
 }
 
 void writeDataToFile()
 {
-    //twPro::FileWriterByParts fileReader("H:\\alita_film_copy.mkv", resultStoragePtr);
-    twPro::FileWriterByParts fileReader("C:\\Users\\YoxFox\\Downloads\\!test_data.sign", resultStoragePtr);
-    fileReader.work(stopFlag);
+    BLOG << "Writer started" << ELOG;
+    fileWriter->work(stopFlag);
+    BLOG << "Writer ended" << ELOG;
 }
 
 void work() {
+    BLOG << "=== START === worker thread: " << std::this_thread::get_id() << ELOG;
     worker->work(stopFlag);
+    BLOG << "=== END === worker thread: " << std::this_thread::get_id() << ELOG;
 }
 
-void takeDataFromResult()
+void controlThread()
 {
-    while (true) {
-        std::shared_ptr<twPro::DataUnit> unit = resultStoragePtr->consumer_popWait(100).lock();
+    BLOG << "Begin control" << ELOG;
 
-        BLOG << "Received id: " << unit->id << ", dataSize: " << unit->dataSize << ", mem size: " << unit->size << ELOG;
+    std::shared_ptr<EventHandler<unsigned long long>> eHandler_reader(new EventHandler<unsigned long long>(5));
+    std::shared_ptr<EventHandler<unsigned long long>> eHandler_writer(new EventHandler<unsigned long long>(5));
+    
+    unsigned long long totalData = fileReader->totalData();
+    BLOG << "File length: " << totalData << ELOG;
 
-        // Some manipulations
-        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    unsigned long long totalWriteData = ((totalData / (1024*1024)) + 1) * 32;
+    BLOG << "File write length: " << totalWriteData << ELOG;
 
-        resultStoragePtr->consumer_push(unit);
-
-        if (unit->id > 49) {
-            break;
-        }
-    }
-
-    resultStoragePtr->clear();
-}
-
-void workerTask()
-{
-    while (true) {
-        BLOG << std::this_thread::get_id() << " | " << "begins" << ELOG;
-
-        std::shared_ptr<twPro::DataUnit> result_unit = resultStoragePtr->producer_popWait(100).lock();
-
-        if (!result_unit) {
-            break;
-        }
-
-        BLOG << std::this_thread::get_id() << " | " << "gotten result unit" << ELOG;
-
-        std::shared_ptr<twPro::DataUnit> task_unit = dataSourcePtr->consumer_popWait(100).lock();
-
-        if (!task_unit) {
-            resultStoragePtr->producer_push(result_unit);
-            break;
-        }
-
-        BLOG << std::this_thread::get_id() << " | " << "gotten souce unit" << ELOG;
-
- //       int * task_val_ptr = reinterpret_cast<int*>(task_unit->ptr);
- //       int * result_val_ptr = reinterpret_cast<int*>(result_unit->ptr);
- //       *result_val_ptr = *task_val_ptr + 5;
-
-        std::memcpy(result_unit->ptr, task_unit->ptr, task_unit->dataSize);
-
-        result_unit->id = task_unit->id;
-        result_unit->dataSize = task_unit->dataSize;
-
-        // Very difficult task
-        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
-        dataSourcePtr->consumer_push(task_unit);
-        resultStoragePtr->producer_push(result_unit);
-
-        BLOG << std::this_thread::get_id() << " | " << "ends" << ELOG;
-    }
-
-    BLOG << "===> Task is done for " << std::this_thread::get_id() << ELOG;
-}
-
-#include "types/eventhandler.h"
-
-EventHandler<unsigned long long> eHandler(1);
-
-int sFooVal = 0;
-std::atomic_bool stopVal = false;
-void someFoo()
-{
-    while (!stopVal) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        BLOG << "generated: " << sFooVal << ELOG;
-        eHandler.notify(HEvent<unsigned long long>(sFooVal));
-        ++sFooVal;
-
-        if (sFooVal > 12) {
-            return;
-        }
-    }
-}
-
-int main()
-{
-    std::thread tFoo(someFoo);
-
-    eHandler.listen([](const HEvent<unsigned long long> & _event) -> bool {
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-        BLOG << "catched: " << _event.value << ELOG;
-
-        if (_event.value > 10) {
-            stopVal = true;
-            return true;
-        }
-
-        return false;
-    });
-
-    tFoo.join();
-    return 0;
-    // =========
-
-    srand(time(NULL));
-    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
-    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
-    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
+    fileReader->setEventHandler_currentProducedData(eHandler_reader);
+    fileWriter->setEventHandler_currentConsumedData(eHandler_writer);
 
     std::thread tc(createDataFromFile);
     std::thread tr(writeDataToFile);
 
-//    std::thread tc(createDataToSource);
-//    std::thread tr(takeDataFromResult);
+    BLOG << "Reader listening" << ELOG;
+
+    eHandler_reader->listen([&totalData](const HEvent<unsigned long long> & _event) -> bool {
+        if (_event.value >= totalData) {
+            return true;
+        }
+        return false;
+    });
+
+    BLOG << "Writer listening" << ELOG;
+
+    eHandler_writer->listen([&totalWriteData, eHandler_writer](const HEvent<unsigned long long> & _event) -> bool {
+        BLOG << "Writer listening, current consumed data length:" << _event.value << ", eQueueSize: " << eHandler_writer->currentQueueSize() << ELOG;
+        if (_event.value >= totalWriteData) {
+            return true;
+        }
+        return false;
+    });
+
+    BLOG << "End of the listening" << ELOG;
+
+    stopFlag = true;
+
+    dataSourcePtr->clear();
+    dataSourcePtr.reset();
+
+    BLOG << "Data source was cleared" << ELOG;
+
+    resultStoragePtr->clear();
+    resultStoragePtr.reset();
+
+    BLOG << "Result storage was cleared" << ELOG;
+
+    worker.reset();
+    fileReader.reset();
+    fileWriter.reset();
+
+    BLOG << "Waiting thread ends" << ELOG;
+
+    tc.join(); tr.join();
+
+    BLOG << "End control" << ELOG;
+}
+
+int main()
+{
+    srand(time(NULL));
+
+    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
+    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
+    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
+
+    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("H:\\alita_film.mkv", dataSourcePtr));
+
+    //fileWriter.reset(new twPro::FileWriterByParts("H:\\alita_film_copy.mkv", resultStoragePtr));
+    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign", resultStoragePtr));
+
+    std::thread ct(controlThread);
 
     std::thread t1(work), t2(work), t3(work), t4(work), t5(work),
     t6(work), t7(work), t8(work), t9(work), t10(work);
 
-    tc.join(); tr.join();
     t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
     t6.join(); t7.join(); t8.join(); t9.join(); t10.join();
+
+    ct.join();
+
+    //system("pause");
 }

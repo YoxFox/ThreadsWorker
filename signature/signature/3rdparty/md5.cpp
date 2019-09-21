@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 /* MD5
  converted to C++ class by Frank Thilo (thilo@unix-ag.org)
  for bzflag (http://www.bzflag.org)
@@ -352,7 +350,7 @@ namespace bzflag {
 
         char buf[33];
         for (int i = 0; i < 16; i++)
-            sprintf(buf + i * 2, "%02x", digest[i]);
+            snprintf(buf + i * 2, 4, "%02x", digest[i]);
         buf[32] = 0;
 
         return std::string(buf);
@@ -360,13 +358,20 @@ namespace bzflag {
 
     //////////////////////////////
 
+    void charToHex(const char _ch, char* _buffer) {
+        static char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        *_buffer = hex_chars[(_ch & 0xF0) >> 4];
+        *(_buffer + 1) = hex_chars[(_ch & 0x0F) >> 0];
+    }
+
     void MD5::hexdigest(char * output) const
     {
         if (!finalized)
             return;
 
-        for (int i = 0; i < 16; i++)
-            sprintf(output + i * 2, "%02x", digest[i]);
+        for (int i = 0; i < 16; i++) {
+            charToHex(digest[i], output + i * 2);
+        }
     }
 
     //////////////////////////////

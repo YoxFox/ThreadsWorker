@@ -1,6 +1,15 @@
 #include "databuffer.h"
 
+#include <iostream>
+
 namespace twPro {
+
+    template <class T>
+    std::weak_ptr<T> expiredWeakPtr()
+    {
+        std::shared_ptr<T> sPtr(nullptr);
+        return sPtr;
+    }
 
     DataBuffer::DataBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize) :
         m_isAvailable(true),
@@ -28,6 +37,7 @@ namespace twPro {
 
     DataBuffer::~DataBuffer() noexcept
     {
+        std::cout << __FUNCTION__ << "\n";
         clear();
     }
 
@@ -53,15 +63,7 @@ namespace twPro {
             m_availableUnits.pop();
         }
 
-        lk.unlock();
-
         m_cv.notify_all();
-    }
-
-    bool DataBuffer::isFullAvailable() const noexcept
-    {
-        std::lock_guard<std::mutex> lock(m_pc_mutex);
-        return m_pcQueue.producerSize() == m_bufferCapacity;
     }
 
     std::weak_ptr<DataUnit> DataBuffer::producer_popWait(const long long _waitMilliseconds) noexcept
@@ -69,7 +71,7 @@ namespace twPro {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
             if (!m_isAvailable) {
-                return std::weak_ptr<DataUnit>();
+                return expiredWeakPtr<DataUnit>();
             }
         }
 
@@ -81,8 +83,8 @@ namespace twPro {
 
         // It's for debug: of course we can write "return m_isAvailable ? m_pcQueue.pPop() : nullptr"
 
-        if (!m_isAvailable) {
-            return std::weak_ptr<DataUnit>();
+        if (!m_isAvailable || m_pcQueue.producerEmpty()) {
+            return expiredWeakPtr<DataUnit>();
         }
 
         // Take the element from the producer queue
@@ -94,7 +96,7 @@ namespace twPro {
         {
             std::lock_guard<std::mutex> lock(m_pc_mutex);
             if (!m_isAvailable) {
-                return std::weak_ptr<DataUnit>();
+                return expiredWeakPtr<DataUnit>();
             }
         }
 
@@ -106,8 +108,8 @@ namespace twPro {
 
         // It's for debug: of course we can write "return m_isAvailable ? m_pcQueue.cPop() : nullptr"
 
-        if (!m_isAvailable) {
-            return std::weak_ptr<DataUnit>();
+        if (!m_isAvailable || m_pcQueue.consumerEmpty()) {
+            return expiredWeakPtr<DataUnit>();
         }
 
         // Take the element from the consumer queue
@@ -127,6 +129,19 @@ namespace twPro {
         m_clear_cv.notify_all();
     }
 
+    void DataBuffer::producer_pushNotUsed(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
+    {
+        std::lock_guard<std::mutex> lock(m_pc_mutex);
+
+        // TODO: check if exsists element in the queue
+
+        // Push the element to the producer queue (avaliable for producers)
+        m_pcQueue.pPush(_unitPtr);
+
+        m_cv.notify_one();
+        m_clear_cv.notify_all();
+    }
+
     void DataBuffer::consumer_push(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
@@ -135,6 +150,19 @@ namespace twPro {
 
         // Push the element to the producer queue (avaliable for producers)
         m_pcQueue.pPush(_unitPtr);
+
+        m_cv.notify_one();
+        m_clear_cv.notify_all();
+    }
+
+    void DataBuffer::consumer_pushNotUsed(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
+    {
+        std::lock_guard<std::mutex> lock(m_pc_mutex);
+
+        // TODO: check if exsists element in the queue
+
+        // Push the element to the consumer queue (avaliable for consumers)
+        m_pcQueue.cPush(_unitPtr);
 
         m_cv.notify_one();
         m_clear_cv.notify_all();

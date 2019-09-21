@@ -21,15 +21,15 @@ namespace twPro {
         // Attention! This function waits to clear resources.
         void clear() noexcept;
 
-        // It means all units locate in the producer queue (all resources available for producers)
-        bool isFullAvailable() const noexcept;
-
         // If it returns empty pointer, it means the DataBuffer doesn't have data now
         std::weak_ptr<DataUnit> producer_popWait(const long long _waitMilliseconds) noexcept;
         std::weak_ptr<DataUnit> consumer_popWait(const long long _waitMilliseconds) noexcept;
 
         void producer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+        void producer_pushNotUsed(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+
         void consumer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+        void consumer_pushNotUsed(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
 
     private:
 

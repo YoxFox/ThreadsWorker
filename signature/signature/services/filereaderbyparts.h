@@ -29,8 +29,10 @@ namespace twPro {
         // If true, the work() method do nothing and returns immediately.
         bool isDone() const noexcept override;
 
-        unsigned long long currentProducedDataLength() const noexcept;
-        unsigned long long totalDataLength() const noexcept; // It returns max(return_type) for infinity data
+        unsigned long long currentProducedData() const noexcept;
+        unsigned long long totalData() const noexcept; // It returns max(return_type) for infinity data
+
+        EVENT_HANDLER_MEMBER(currentProducedData, unsigned long long)
 
     private:
 

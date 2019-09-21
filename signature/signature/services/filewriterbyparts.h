@@ -3,6 +3,7 @@
 #include <memory>
 #include <fstream>
 #include <atomic>
+#include <vector>
 
 #include "../interfaces/idataconsumer.h"
 #include "../types/databuffer.h"
@@ -22,7 +23,9 @@ namespace twPro {
         // Working with producing some data. It takes all thread time.
         void work(std::atomic_bool & _stopFlag) override;
 
-        unsigned long long currentConsumedDataLength() const noexcept override;
+        unsigned long long currentConsumedData() const noexcept override;
+
+        EVENT_HANDLER_MEMBER(currentConsumedData, unsigned long long)
 
     private:
 

@@ -1,5 +1,6 @@
 #include "md5hashworker.h"
 
+#include <iostream>
 #include "../../3rdparty/md5.h"
 
 namespace twPro {
@@ -15,6 +16,7 @@ namespace twPro {
 
     MD5HashWorker::~MD5HashWorker()
     {
+        std::cout << __FUNCTION__ << "\n";
     }
 
     void MD5HashWorker::work(std::atomic_bool & _stopFlag)
@@ -37,7 +39,7 @@ namespace twPro {
             std::shared_ptr<twPro::DataUnit> task_unit = m_dataProducer->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!task_unit) {
-                m_resultStorage->producer_push(result_unit);
+                m_resultStorage->producer_pushNotUsed(result_unit);
                 continue;
             }
 
