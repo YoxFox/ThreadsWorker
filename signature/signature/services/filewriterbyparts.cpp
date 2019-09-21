@@ -1,7 +1,5 @@
 #include "filewriterbyparts.h"
 
-#include <iostream>
-
 namespace twPro {
 
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
@@ -19,7 +17,6 @@ namespace twPro {
 
     FileWriterByParts::~FileWriterByParts()
     {
-        std::cout << __FUNCTION__ << "\n";
         m_stream.close();
     }
 
@@ -39,7 +36,7 @@ namespace twPro {
             m_stream.seekp(offset, std::ios_base::beg);
 
             // write
-            m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
+            //m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
 
             m_consumedDataLength += unit->dataSize;
             m_buffer->consumer_push(unit);

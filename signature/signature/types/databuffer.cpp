@@ -1,7 +1,5 @@
 #include "databuffer.h"
 
-#include <iostream>
-
 namespace twPro {
 
     template <class T>
@@ -37,7 +35,6 @@ namespace twPro {
 
     DataBuffer::~DataBuffer() noexcept
     {
-        std::cout << __FUNCTION__ << "\n";
         clear();
     }
 

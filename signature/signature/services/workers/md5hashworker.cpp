@@ -1,6 +1,5 @@
 #include "md5hashworker.h"
 
-#include <iostream>
 #include "../../3rdparty/md5.h"
 
 namespace twPro {
@@ -16,7 +15,6 @@ namespace twPro {
 
     MD5HashWorker::~MD5HashWorker()
     {
-        std::cout << __FUNCTION__ << "\n";
     }
 
     void MD5HashWorker::work(std::atomic_bool & _stopFlag)

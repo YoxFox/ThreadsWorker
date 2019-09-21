@@ -94,6 +94,23 @@ void work() {
 void controlThread()
 {
     BLOG << "Begin control" << ELOG;
+    stopFlag = false;
+
+    // === SET RESOURCES  ===
+
+    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
+    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
+    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
+
+    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr));
+    //fileReader.reset(new twPro::FileReaderByParts("H:\\alita_film.mkv", dataSourcePtr));
+
+    //fileWriter.reset(new twPro::FileWriterByParts("H:\\alita_film_copy.mkv", resultStoragePtr));
+    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign", resultStoragePtr));
+
+    // === SET HANDLERS ===
 
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_reader(new EventHandler<unsigned long long>(5));
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_writer(new EventHandler<unsigned long long>(5));
@@ -107,8 +124,17 @@ void controlThread()
     fileReader->setEventHandler_currentProducedData(eHandler_reader);
     fileWriter->setEventHandler_currentConsumedData(eHandler_writer);
 
+    // === RUN SOURCES ANS RESULTS ===
+
     std::thread tc(createDataFromFile);
     std::thread tr(writeDataToFile);
+
+    // === RUN WORKERS ===
+
+    std::thread t1(work), t2(work), t3(work), t4(work), t5(work),
+    t6(work), t7(work), t8(work), t9(work), t10(work);
+
+    // === RESULTS LISTENING ===
 
     BLOG << "Reader listening" << ELOG;
 
@@ -149,6 +175,9 @@ void controlThread()
 
     BLOG << "Waiting thread ends" << ELOG;
 
+    t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
+    t6.join(); t7.join(); t8.join(); t9.join(); t10.join();
+
     tc.join(); tr.join();
 
     BLOG << "End control" << ELOG;
@@ -158,27 +187,11 @@ int main()
 {
     srand(time(NULL));
 
-    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
-    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
-    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
-
-    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr));
-    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z", dataSourcePtr));
-    //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr));
-    //fileReader.reset(new twPro::FileReaderByParts("H:\\alita_film.mkv", dataSourcePtr));
-
-    //fileWriter.reset(new twPro::FileWriterByParts("H:\\alita_film_copy.mkv", resultStoragePtr));
-    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign", resultStoragePtr));
-
-    std::thread ct(controlThread);
-
-    std::thread t1(work), t2(work), t3(work), t4(work), t5(work),
-    t6(work), t7(work), t8(work), t9(work), t10(work);
-
-    t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
-    t6.join(); t7.join(); t8.join(); t9.join(); t10.join();
-
-    ct.join();
+    unsigned int testsCount = 10;
+    for (int idx = 0; idx < testsCount; ++idx) {
+        std::thread ct(controlThread);
+        ct.join();
+    }
 
     //system("pause");
 }

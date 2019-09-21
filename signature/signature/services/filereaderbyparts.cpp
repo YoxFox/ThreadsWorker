@@ -1,7 +1,5 @@
 #include "filereaderbyparts.h"
 
-#include <iostream>
-
 namespace twPro {
 
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
@@ -21,7 +19,6 @@ namespace twPro {
 
     FileReaderByParts::~FileReaderByParts()
     {
-        std::cout << __FUNCTION__ << "\n";
     }
 
     void FileReaderByParts::work(std::atomic_bool & _stopFlag)
