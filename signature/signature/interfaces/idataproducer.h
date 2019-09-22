@@ -23,10 +23,11 @@ namespace twPro {
         // If true, the work() method do nothing and returns immediately.
         virtual bool isDone() const noexcept = 0;
 
-        virtual unsigned long long currentProducedData() const noexcept = 0;
-        virtual unsigned long long totalData() const noexcept = 0; // It returns max(return_type) for infinity data
+        virtual size_t currentProducedData() const noexcept = 0;
+        virtual size_t currentProducedDataUnits() const noexcept = 0;
+        virtual size_t totalData() const noexcept = 0; // It returns max(return_type) for infinity data
 
-        I_EVENT_HANDLER_MEMBER(currentProducedData, unsigned long long)
+        I_EVENT_HANDLER_MEMBER(currentProducedDataUnits, size_t)
 
     };
 

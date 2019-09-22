@@ -93,12 +93,17 @@ void work() {
 
 void controlThread()
 {
-    BLOG << "Begin control" << ELOG;
+    srand(time(0));
+
+    BLOG << "++++++++++ Begin control ++++++++++" << ELOG;
     stopFlag = false;
 
     // === SET RESOURCES  ===
 
-    dataSourcePtr.reset(new twPro::DataBuffer(20, 1024 * 1024));
+    size_t blockSize = 64 + std::rand() % 1024*1024*10;
+    BLOG << ">> Current block size: " << blockSize << ELOG;
+
+    dataSourcePtr.reset(new twPro::DataBuffer(20, blockSize));
     resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
     worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
 
@@ -115,14 +120,14 @@ void controlThread()
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_reader(new EventHandler<unsigned long long>(5));
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_writer(new EventHandler<unsigned long long>(5));
     
-    unsigned long long totalData = fileReader->totalData();
+    size_t totalData = fileReader->totalData();
     BLOG << "File length: " << totalData << ELOG;
 
-    unsigned long long totalWriteData = ((totalData / (1024*1024)) + 1) * 32;
-    BLOG << "File write length: " << totalWriteData << ELOG;
+    size_t totalWriteDataUnits = ((totalData / blockSize) + (totalData % blockSize > 0 ? 1 : 0));
+    BLOG << "File write units: " << totalWriteDataUnits << ELOG;
 
-    fileReader->setEventHandler_currentProducedData(eHandler_reader);
-    fileWriter->setEventHandler_currentConsumedData(eHandler_writer);
+    fileReader->setEventHandler_currentProducedDataUnits(eHandler_reader);
+    fileWriter->setEventHandler_currentConsumedDataUnits(eHandler_writer);
 
     // === RUN SOURCES ANS RESULTS ===
 
@@ -138,8 +143,8 @@ void controlThread()
 
     BLOG << "Reader listening" << ELOG;
 
-    eHandler_reader->listen([&totalData](const HEvent<unsigned long long> & _event) -> bool {
-        if (_event.value >= totalData) {
+    eHandler_reader->listen([&totalWriteDataUnits](const HEvent<unsigned long long> & _event) -> bool {
+        if (_event.value >= totalWriteDataUnits) {
             return true;
         }
         return false;
@@ -147,9 +152,9 @@ void controlThread()
 
     BLOG << "Writer listening" << ELOG;
 
-    eHandler_writer->listen([&totalWriteData, eHandler_writer](const HEvent<unsigned long long> & _event) -> bool {
-        BLOG << "Writer listening, current consumed data length:" << _event.value << ", eQueueSize: " << eHandler_writer->currentQueueSize() << ELOG;
-        if (_event.value >= totalWriteData) {
+    eHandler_writer->listen([&totalWriteDataUnits, eHandler_writer](const HEvent<unsigned long long> & _event) -> bool {
+        BLOG << "Writer listening, current consumed data units:" << _event.value << ", eQueueSize: " << eHandler_writer->currentQueueSize() << ELOG;
+        if (_event.value >= totalWriteDataUnits) {
             return true;
         }
         return false;
@@ -180,18 +185,28 @@ void controlThread()
 
     tc.join(); tr.join();
 
-    BLOG << "End control" << ELOG;
+    BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
 }
 
 int main()
 {
-    srand(time(NULL));
-
-    unsigned int testsCount = 10;
-    for (int idx = 0; idx < testsCount; ++idx) {
+    /*
+    unsigned int testsCount = 100;
+    for (unsigned int idx = 0; idx < testsCount; ++idx) {
         std::thread ct(controlThread);
         ct.join();
     }
+    */
+
+    /*
+    while (true) {
+        std::thread ct(controlThread);
+        ct.join();
+    }
+    */
+
+    std::thread ct(controlThread);
+    ct.join();
 
     //system("pause");
 }

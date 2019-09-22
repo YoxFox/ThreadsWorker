@@ -19,9 +19,10 @@ namespace twPro {
         // Stop flag: TRUE is STOP, FALSE is continue
         virtual void work(std::atomic_bool & _stopFlag) = 0;
 
-        virtual unsigned long long currentConsumedData() const noexcept = 0;
+        virtual size_t currentConsumedData() const noexcept = 0;
+        virtual size_t currentConsumedDataUnits() const noexcept = 0;
 
-        I_EVENT_HANDLER_MEMBER(currentConsumedData, unsigned long long)
+        I_EVENT_HANDLER_MEMBER(currentConsumedDataUnits, size_t)
 
     };
 

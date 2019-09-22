@@ -60,7 +60,7 @@ namespace twPro {
 
             ++m_idPart;
             m_producedDataLength += blockLength;
-            eventHandler_currentProducedData_notify(HEvent<unsigned long long>(m_producedDataLength));
+            eventHandler_currentProducedDataUnits_notify(HEvent<size_t>(m_idPart));
         }
 
         if (m_producedDataLength >= m_fileLength) {
@@ -73,14 +73,19 @@ namespace twPro {
         return m_isDone.load();
     }
 
-    unsigned long long FileReaderByParts::currentProducedData() const noexcept
+    size_t FileReaderByParts::currentProducedData() const noexcept
     {
         return m_producedDataLength.load();
     }
 
-    unsigned long long FileReaderByParts::totalData() const noexcept
+    size_t FileReaderByParts::totalData() const noexcept
     {
         return m_fileLength.load();
+    }
+
+    size_t FileReaderByParts::currentProducedDataUnits() const noexcept
+    {
+        return m_idPart;
     }
 
 }

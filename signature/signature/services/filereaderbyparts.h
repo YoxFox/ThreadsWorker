@@ -29,18 +29,20 @@ namespace twPro {
         // If true, the work() method do nothing and returns immediately.
         bool isDone() const noexcept override;
 
-        unsigned long long currentProducedData() const noexcept;
-        unsigned long long totalData() const noexcept; // It returns max(return_type) for infinity data
+        size_t currentProducedData() const noexcept override;
+        size_t currentProducedDataUnits() const noexcept override;
+        size_t totalData() const noexcept override; // It returns max(return_type) for infinity data
 
-        EVENT_HANDLER_MEMBER(currentProducedData, unsigned long long)
+        EVENT_HANDLER_MEMBER(currentProducedDataUnits, size_t)
 
     private:
 
         std::atomic_bool m_isDone;
         std::atomic_bool m_isStopped;
-        unsigned long long m_idPart;
-        std::atomic_ullong m_producedDataLength;
-        std::atomic_ullong m_fileLength;
+
+        std::atomic<size_t> m_idPart;
+        std::atomic<size_t> m_producedDataLength;
+        std::atomic<size_t> m_fileLength;
 
         std::mutex work_mutex;
 

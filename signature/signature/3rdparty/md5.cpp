@@ -369,7 +369,7 @@ namespace bzflag {
         if (!finalized)
             return;
 
-        for (int i = 0; i < 16; i++) {
+        for (char i = 0; i < 16; i++) {
             charToHex(digest[i], output + i * 2);
         }
     }

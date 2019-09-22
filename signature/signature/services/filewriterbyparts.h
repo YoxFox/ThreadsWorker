@@ -23,15 +23,17 @@ namespace twPro {
         // Working with producing some data. It takes all thread time.
         void work(std::atomic_bool & _stopFlag) override;
 
-        unsigned long long currentConsumedData() const noexcept override;
+        size_t currentConsumedData() const noexcept override;
+        size_t currentConsumedDataUnits() const noexcept override;
 
-        EVENT_HANDLER_MEMBER(currentConsumedData, unsigned long long)
+        EVENT_HANDLER_MEMBER(currentConsumedDataUnits, size_t)
 
     private:
 
         std::mutex work_mutex;
 
-        std::atomic_ullong m_consumedDataLength;
+        std::atomic<size_t> m_consumedDataBlocks;
+        std::atomic<size_t> m_consumedDataLength;
         std::shared_ptr<twPro::DataBuffer> m_buffer;
         std::ofstream m_stream;
 

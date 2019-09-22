@@ -5,6 +5,7 @@ namespace twPro {
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
 
     FileWriterByParts::FileWriterByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
+        m_consumedDataBlocks(0),
         m_consumedDataLength(0),
         m_buffer(_buffer)
     {
@@ -36,16 +37,22 @@ namespace twPro {
             m_stream.seekp(offset, std::ios_base::beg);
 
             // write
-            //m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
+            m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
 
+            ++m_consumedDataBlocks;
             m_consumedDataLength += unit->dataSize;
             m_buffer->consumer_push(unit);
-            eventHandler_currentConsumedData_notify(HEvent<unsigned long long>(m_consumedDataLength));
+            eventHandler_currentConsumedDataUnits_notify(HEvent<size_t>(m_consumedDataBlocks));
         }
     }
 
-    unsigned long long FileWriterByParts::currentConsumedData() const noexcept
+    size_t FileWriterByParts::currentConsumedData() const noexcept
     {
         return m_consumedDataLength.load();
+    }
+
+    size_t FileWriterByParts::currentConsumedDataUnits() const noexcept
+    {
+        return m_consumedDataBlocks;
     }
 }
