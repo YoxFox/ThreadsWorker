@@ -55,12 +55,12 @@ int main()
 #include "services/filewriterbyparts.h"
 #include "services/workers/md5hashworker.h"
 
-std::shared_ptr<twPro::FileReaderByParts> fileReader;
-std::shared_ptr<twPro::FileWriterByParts> fileWriter;
+std::shared_ptr<twPro::IDataProducer> dataProducer;
+std::shared_ptr<twPro::IDataConsumer> dataConsumer;
+std::shared_ptr<twPro::IWorker> worker;
 
 std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
 std::shared_ptr<twPro::DataBuffer> resultStoragePtr;
-std::shared_ptr<twPro::IWorker> worker;
 
 std::atomic_bool stopFlag = false;
 
@@ -71,17 +71,17 @@ static std::mutex log_mutex;
 #define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
 #define ELOG "\n";}
 
-void createDataFromFile()
+void doDataProducing()
 {
     BLOG << "Reader started" << ELOG;
-    fileReader->work(stopFlag);
+    dataProducer->work(stopFlag);
     BLOG << "Reader ended" << ELOG;
 }
 
-void writeDataToFile()
+void doDataConsuming()
 {
     BLOG << "Writer started" << ELOG;
-    fileWriter->work(stopFlag);
+    dataConsumer->work(stopFlag);
     BLOG << "Writer ended" << ELOG;
 }
 
@@ -111,34 +111,34 @@ void controlThread()
     worker->setConsumerBuffer(dataSourcePtr);
     worker->setProducerBuffer(resultStoragePtr);
 
-    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv"));
+    dataProducer.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv"));
     //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z", dataSourcePtr));
     //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr));
     //fileReader.reset(new twPro::FileReaderByParts("H:\\alita_film.mkv", dataSourcePtr));
-    fileReader->setProducerBuffer(dataSourcePtr);
+    dataProducer->setProducerBuffer(dataSourcePtr);
 
     //fileWriter.reset(new twPro::FileWriterByParts("H:\\alita_film_copy.mkv", resultStoragePtr));
-    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign"));
-    fileWriter->setConsumerBuffer(resultStoragePtr);
+    dataConsumer.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign"));
+    dataConsumer->setConsumerBuffer(resultStoragePtr);
 
     // === SET HANDLERS ===
 
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_reader(new EventHandler<unsigned long long>(5));
     std::shared_ptr<EventHandler<unsigned long long>> eHandler_writer(new EventHandler<unsigned long long>(5));
     
-    size_t totalData = fileReader->totalData();
+    size_t totalData = dataProducer->totalData();
     BLOG << "File length: " << totalData << ELOG;
 
     size_t totalWriteDataUnits = ((totalData / blockSize) + (totalData % blockSize > 0 ? 1 : 0));
     BLOG << "File write units: " << totalWriteDataUnits << ELOG;
 
-    fileReader->setEventHandler_currentProducedDataUnits(eHandler_reader);
-    fileWriter->setEventHandler_currentConsumedDataUnits(eHandler_writer);
+    dataProducer->setEventHandler_currentProducedDataUnits(eHandler_reader);
+    dataConsumer->setEventHandler_currentConsumedDataUnits(eHandler_writer);
 
     // === RUN SOURCES ANS RESULTS ===
 
-    std::thread tc(createDataFromFile);
-    std::thread tr(writeDataToFile);
+    std::thread tc(doDataProducing);
+    std::thread tr(doDataConsuming);
 
     // === RUN WORKERS ===
 
@@ -181,8 +181,8 @@ void controlThread()
     BLOG << "Result storage was cleared" << ELOG;
 
     worker.reset();
-    fileReader.reset();
-    fileWriter.reset();
+    dataProducer.reset();
+    dataConsumer.reset();
 
     BLOG << "Waiting thread ends" << ELOG;
 
