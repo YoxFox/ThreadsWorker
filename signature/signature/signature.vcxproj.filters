@@ -48,6 +48,9 @@
     <ClInclude Include="types\eventhandler.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="services\workers\baseblockworker.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,6 +72,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\md5.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="services\workers\baseblockworker.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

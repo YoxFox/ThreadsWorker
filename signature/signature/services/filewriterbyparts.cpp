@@ -4,10 +4,10 @@ namespace twPro {
 
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
 
-    FileWriterByParts::FileWriterByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
+    FileWriterByParts::FileWriterByParts(const std::string & _filePath) :
         m_consumedDataBlocks(0),
         m_consumedDataLength(0),
-        m_buffer(_buffer)
+        m_buffer(nullptr)
     {
         m_stream.open(_filePath, std::ifstream::binary);
 
@@ -21,9 +21,20 @@ namespace twPro {
         m_stream.close();
     }
 
+    void FileWriterByParts::setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
+    {
+        std::lock_guard<std::mutex> lock(work_mutex);
+        m_buffer = _buffer;
+    }
+
     void FileWriterByParts::work(std::atomic_bool & _stopFlag)
     {
         std::lock_guard<std::mutex> lock(work_mutex);
+
+        if (!m_buffer) {
+            // throw excp
+            return;
+        }
 
         while (!_stopFlag.load()) {
 

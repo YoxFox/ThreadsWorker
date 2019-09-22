@@ -103,17 +103,23 @@ void controlThread()
     size_t blockSize = 64 + std::rand() % 1024*1024*10;
     BLOG << ">> Current block size: " << blockSize << ELOG;
 
-    dataSourcePtr.reset(new twPro::DataBuffer(20, blockSize));
-    resultStoragePtr.reset(new twPro::DataBuffer(20, 32));
-    worker.reset(new twPro::MD5HashWorker(dataSourcePtr, resultStoragePtr));
+    worker.reset(new twPro::MD5HashWorker());
 
-    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv", dataSourcePtr));
+    dataSourcePtr.reset(new twPro::DataBuffer(20, blockSize));
+    resultStoragePtr.reset(new twPro::DataBuffer(20, worker->maxProducingDataUnitSizeByConsumingDataUnitSize(blockSize)));
+
+    worker->setConsumerBuffer(dataSourcePtr);
+    worker->setProducerBuffer(resultStoragePtr);
+
+    fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\alita_film.mkv"));
     //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z", dataSourcePtr));
     //fileReader.reset(new twPro::FileReaderByParts("C:\\Users\\YoxFox\\Downloads\\!test_data.txt", dataSourcePtr));
     //fileReader.reset(new twPro::FileReaderByParts("H:\\alita_film.mkv", dataSourcePtr));
+    fileReader->setProducerBuffer(dataSourcePtr);
 
     //fileWriter.reset(new twPro::FileWriterByParts("H:\\alita_film_copy.mkv", resultStoragePtr));
-    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign", resultStoragePtr));
+    fileWriter.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign"));
+    fileWriter->setConsumerBuffer(resultStoragePtr);
 
     // === SET HANDLERS ===
 

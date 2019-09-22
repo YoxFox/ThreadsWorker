@@ -17,8 +17,11 @@ namespace twPro {
     {
     public:
 
-        FileWriterByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer);
+        FileWriterByParts(const std::string & _filePath);
         ~FileWriterByParts() override;
+
+        // Output data buffer for producing
+        void setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept override;
 
         // Working with producing some data. It takes all thread time.
         void work(std::atomic_bool & _stopFlag) override;

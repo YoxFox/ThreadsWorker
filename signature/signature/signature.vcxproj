@@ -157,6 +157,7 @@
     <ClInclude Include="interfaces\iworker.h" />
     <ClInclude Include="services\filereaderbyparts.h" />
     <ClInclude Include="services\filewriterbyparts.h" />
+    <ClInclude Include="services\workers\baseblockworker.h" />
     <ClInclude Include="services\workers\md5hashworker.h" />
     <ClInclude Include="types\databuffer.h" />
     <ClInclude Include="types\dataunit.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="services\filereaderbyparts.cpp" />
     <ClCompile Include="services\filewriterbyparts.cpp" />
+    <ClCompile Include="services\workers\baseblockworker.cpp" />
     <ClCompile Include="services\workers\md5hashworker.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />

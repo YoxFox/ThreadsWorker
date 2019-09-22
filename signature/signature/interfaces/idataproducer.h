@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../types/eventhandler.h"
+#include "../types/databuffer.h"
 
 namespace twPro {
 
@@ -12,6 +13,9 @@ namespace twPro {
     public:
 
         virtual ~IDataProducer() noexcept {}
+
+        // Output data buffer for producing
+        virtual void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept = 0;
 
         // It takes all thread time. 
         // It can be multithreadable, it can be called by different trhreads many times.

@@ -16,8 +16,11 @@ namespace twPro {
     {
     public:
 
-        FileReaderByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer);
+        FileReaderByParts(const std::string & _filePath);
         ~FileReaderByParts() override;
+
+        // Output data buffer for producing
+        void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept override;
 
         // It takes all thread time. 
         // It can be multithreadable, it can be called by different trhreads many times.

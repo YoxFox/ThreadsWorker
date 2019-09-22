@@ -4,9 +4,9 @@ namespace twPro {
 
     static long long UNIT_WAIT_TIMEOUT_MS = 100;
 
-    FileReaderByParts::FileReaderByParts(const std::string & _filePath, const std::shared_ptr<twPro::DataBuffer> & _buffer) :
+    FileReaderByParts::FileReaderByParts(const std::string & _filePath) :
         m_isDone(false), m_isStopped(true), m_idPart(0), m_producedDataLength(0), m_fileLength(0),
-        m_buffer(_buffer), m_stream(_filePath, std::ifstream::binary)
+        m_buffer(nullptr), m_stream(_filePath, std::ifstream::binary)
     {
         if (!m_stream) {
             throw std::runtime_error("Can't open file to read: " + _filePath);
@@ -21,11 +21,22 @@ namespace twPro {
     {
     }
 
+    void FileReaderByParts::setProducerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
+    {
+        std::lock_guard<std::mutex> lock(work_mutex);
+        m_buffer = _buffer;
+    }
+
     void FileReaderByParts::work(std::atomic_bool & _stopFlag)
     {
         std::lock_guard<std::mutex> lock(work_mutex);
 
         if (isDone()) {
+            return;
+        }
+
+        if (!m_buffer) {
+            // throw excp
             return;
         }
 
