@@ -1,5 +1,7 @@
 #include "filetofilebyblockstask.h"
 
+#include "../services/threadpool.h"
+
 #include <iostream>
 static std::mutex log_mutex;
 #define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
@@ -56,24 +58,32 @@ namespace twPro {
         m_sourceFilePtr->setNotifier_currentProducedDataUnits(readerNotifier);
         m_resultFilePtr->setNotifier_currentConsumedDataUnits(writerNotifier);
 
-        // === RUN SOURCES ANS RESULTS ===
+        // === RUN WORKERS IN THREADS ===
 
-        std::thread tc([this, &stopFlag]() {
+        auto fileReaderJob = [this, &stopFlag]() {
             m_sourceFilePtr->work(stopFlag);
-        });
+        };
 
-        std::thread tr([this, &stopFlag]() {
+        auto fileWriterJob = [this, &stopFlag]() {
             m_resultFilePtr->work(stopFlag);
-        });
+        };
 
-        // === RUN WORKERS ===
-
-        auto worker = [this, &stopFlag]() {
+        auto workerJob = [this, &stopFlag]() {
             m_worker->work(stopFlag);
         };
 
-        std::thread t1(worker), t2(worker), t3(worker), t4(worker), t5(worker),
-            t6(worker), t7(worker), t8(worker), t9(worker), t10(worker);
+        ThreadPool tPool;
+
+        tPool.poolTask(fileReaderJob);
+        tPool.poolTask(fileWriterJob);
+
+        size_t curAvailableThreads = tPool.countMaxAvailableThreads();
+
+        if (curAvailableThreads <= 1) {
+            tPool.poolTask(workerJob);
+        } else {
+            for (size_t i = 1; i <= curAvailableThreads - 1; ++i) { tPool.poolTask(workerJob); }
+        }
 
         // === RESULTS LISTENING ===
 
@@ -116,10 +126,7 @@ namespace twPro {
 
         BLOG << "Waiting thread ends" << ELOG;
 
-        t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
-        t6.join(); t7.join(); t8.join(); t9.join(); t10.join();
-
-        tc.join(); tr.join();
+        tPool.join();
 
         BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
     }

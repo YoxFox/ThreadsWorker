@@ -148,11 +148,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\boost\bin\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\md5.h" />
     <ClInclude Include="interfaces\itask.h" />
+    <ClInclude Include="services\threadpool.h" />
     <ClInclude Include="types\applicationparameters.h" />
     <ClInclude Include="tasks\filetofilebyblockstask.h" />
     <ClInclude Include="interfaces\idataconsumer.h" />
@@ -171,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdparty\md5.cpp" />
+    <ClCompile Include="services\threadpool.cpp" />
     <ClCompile Include="tasks\filetofilebyblockstask.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="services\filereaderbyparts.cpp" />
