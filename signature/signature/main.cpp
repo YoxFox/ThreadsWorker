@@ -55,8 +55,8 @@ int main()
 #include "services/filewriterbyparts.h"
 #include "services/workers/md5hashworker.h"
 
-std::shared_ptr<twPro::IDataProducer> dataProducer;
-std::shared_ptr<twPro::IDataConsumer> dataConsumer;
+std::shared_ptr<twPro::FileReaderByParts> dataProducer;
+std::shared_ptr<twPro::FileWriterByParts> dataConsumer;
 std::shared_ptr<twPro::IWorker> worker;
 
 std::shared_ptr<twPro::DataBuffer> dataSourcePtr;
@@ -194,8 +194,51 @@ void controlThread()
     BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
 }
 
+#include "types/datachannel.h"
+
+void stFoo(std::shared_ptr<twPro::Notifier<int>> _notifier)
+{
+    for (int i = 0; i < 10; ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        _notifier->notify(i);
+    }
+}
+
+void stFoo_ch(std::shared_ptr<twPro::Notifier<char>> _notifier)
+{
+    for (int i = 0; i < 10; ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        _notifier->notify('T');
+    }
+}
+
 int main()
 {
+    twPro::DataChannel ch;
+    std::shared_ptr<twPro::Notifier<int>> intNotifier = ch.createNotifier<int>();
+    std::shared_ptr<twPro::Notifier<char>> charNotifier = ch.createNotifier<char>();
+
+    std::atomic_bool stopVal = false;
+
+    intNotifier->setCallBack([&stopVal](const int & _val) {
+        BLOG << "HOP: " << _val << ELOG;
+        if (_val >= 9) {
+            stopVal = true;
+        }
+    });
+
+    charNotifier->setCallBack([&stopVal](const char & _val) {
+        BLOG << "HIP: " << _val << ELOG;
+    });
+
+    std::thread someThread(stFoo, intNotifier);
+    std::thread someThread_2(stFoo_ch, charNotifier);
+
+    ch.listen(stopVal);
+
+    someThread.join();
+    someThread_2.join();
+
     /*
     unsigned int testsCount = 100;
     for (unsigned int idx = 0; idx < testsCount; ++idx) {
@@ -211,8 +254,10 @@ int main()
     }
     */
 
+    /*
     std::thread ct(controlThread);
     ct.join();
+    */
 
     //system("pause");
 }
