@@ -71,7 +71,7 @@ namespace twPro {
 
             ++m_idPart;
             m_producedDataLength += blockLength;
-            eventHandler_currentProducedDataUnits_notify(HEvent<size_t>(m_idPart));
+            currentProducedDataUnits_notify(m_idPart);
         }
 
         if (m_producedDataLength >= m_fileLength) {

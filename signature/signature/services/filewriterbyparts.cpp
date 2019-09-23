@@ -53,7 +53,7 @@ namespace twPro {
             ++m_consumedDataBlocks;
             m_consumedDataLength += unit->dataSize;
             m_buffer->consumer_push(unit);
-            eventHandler_currentConsumedDataUnits_notify(HEvent<size_t>(m_consumedDataBlocks));
+            currentConsumedDataUnits_notify(m_consumedDataBlocks);
         }
     }
 

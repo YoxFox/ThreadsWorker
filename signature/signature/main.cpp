@@ -121,10 +121,11 @@ void controlThread()
     dataConsumer.reset(new twPro::FileWriterByParts("C:\\Users\\YoxFox\\Downloads\\!data.sign"));
     dataConsumer->setConsumerBuffer(resultStoragePtr);
 
-    // === SET HANDLERS ===
+    // === SET NOTIFIERS ===
 
-    std::shared_ptr<EventHandler<unsigned long long>> eHandler_reader(new EventHandler<unsigned long long>(5));
-    std::shared_ptr<EventHandler<unsigned long long>> eHandler_writer(new EventHandler<unsigned long long>(5));
+    twPro::DataChannel ch;
+    std::shared_ptr<twPro::Notifier<size_t>> readerNotifier = ch.createNotifier<size_t>(5);
+    std::shared_ptr<twPro::Notifier<size_t>> writerNotifier = ch.createNotifier<size_t>(5);
     
     size_t totalData = dataProducer->totalData();
     BLOG << "File length: " << totalData << ELOG;
@@ -132,8 +133,8 @@ void controlThread()
     size_t totalWriteDataUnits = ((totalData / blockSize) + (totalData % blockSize > 0 ? 1 : 0));
     BLOG << "File write units: " << totalWriteDataUnits << ELOG;
 
-    dataProducer->setEventHandler_currentProducedDataUnits(eHandler_reader);
-    dataConsumer->setEventHandler_currentConsumedDataUnits(eHandler_writer);
+    dataProducer->setNotifier_currentProducedDataUnits(readerNotifier);
+    dataConsumer->setNotifier_currentConsumedDataUnits(writerNotifier);
 
     // === RUN SOURCES ANS RESULTS ===
 
@@ -147,28 +148,24 @@ void controlThread()
 
     // === RESULTS LISTENING ===
 
-    BLOG << "Reader listening" << ELOG;
-
-    eHandler_reader->listen([&totalWriteDataUnits](const HEvent<unsigned long long> & _event) -> bool {
-        if (_event.value >= totalWriteDataUnits) {
-            return true;
+    readerNotifier->setCallBack([&totalWriteDataUnits](const size_t & _val) {
+        if (_val >= totalWriteDataUnits) {
+            BLOG << "Reader is done" << ELOG;
         }
-        return false;
     });
 
-    BLOG << "Writer listening" << ELOG;
-
-    eHandler_writer->listen([&totalWriteDataUnits, eHandler_writer](const HEvent<unsigned long long> & _event) -> bool {
-        BLOG << "Writer listening, current consumed data units:" << _event.value << ", eQueueSize: " << eHandler_writer->currentQueueSize() << ELOG;
-        if (_event.value >= totalWriteDataUnits) {
-            return true;
+    writerNotifier->setCallBack([&totalWriteDataUnits](const size_t & _val) {
+        if (_val >= totalWriteDataUnits) {
+            stopFlag = true;
+            BLOG << "Writer is done" << ELOG;
         }
-        return false;
     });
+
+    BLOG << "Begin of the listening" << ELOG;
+
+    ch.listen(stopFlag);
 
     BLOG << "End of the listening" << ELOG;
-
-    stopFlag = true;
 
     dataSourcePtr->clear();
     dataSourcePtr.reset();
@@ -194,51 +191,8 @@ void controlThread()
     BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
 }
 
-#include "types/datachannel.h"
-
-void stFoo(std::shared_ptr<twPro::Notifier<int>> _notifier)
-{
-    for (int i = 0; i < 10; ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        _notifier->notify(i);
-    }
-}
-
-void stFoo_ch(std::shared_ptr<twPro::Notifier<char>> _notifier)
-{
-    for (int i = 0; i < 10; ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        _notifier->notify('T');
-    }
-}
-
 int main()
 {
-    twPro::DataChannel ch;
-    std::shared_ptr<twPro::Notifier<int>> intNotifier = ch.createNotifier<int>();
-    std::shared_ptr<twPro::Notifier<char>> charNotifier = ch.createNotifier<char>();
-
-    std::atomic_bool stopVal = false;
-
-    intNotifier->setCallBack([&stopVal](const int & _val) {
-        BLOG << "HOP: " << _val << ELOG;
-        if (_val >= 9) {
-            stopVal = true;
-        }
-    });
-
-    charNotifier->setCallBack([&stopVal](const char & _val) {
-        BLOG << "HIP: " << _val << ELOG;
-    });
-
-    std::thread someThread(stFoo, intNotifier);
-    std::thread someThread_2(stFoo_ch, charNotifier);
-
-    ch.listen(stopVal);
-
-    someThread.join();
-    someThread_2.join();
-
     /*
     unsigned int testsCount = 100;
     for (unsigned int idx = 0; idx < testsCount; ++idx) {
@@ -254,10 +208,8 @@ int main()
     }
     */
 
-    /*
     std::thread ct(controlThread);
     ct.join();
-    */
 
     //system("pause");
 }

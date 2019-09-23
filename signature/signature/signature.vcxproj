@@ -160,9 +160,10 @@
     <ClInclude Include="services\workers\baseblockworker.h" />
     <ClInclude Include="services\workers\md5hashworker.h" />
     <ClInclude Include="types\databuffer.h" />
+    <ClInclude Include="types\datachannel.h" />
     <ClInclude Include="types\dataunit.h" />
-    <ClInclude Include="types\eventhandler.h" />
     <ClInclude Include="types\pcqueue.h" />
+    <ClInclude Include="types\workerstypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdparty\md5.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="services\workers\baseblockworker.cpp" />
     <ClCompile Include="services\workers\md5hashworker.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
+    <ClCompile Include="types\datachannel.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

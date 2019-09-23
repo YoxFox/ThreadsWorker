@@ -1,5 +1,8 @@
 #pragma once
 
+// REMOVE IT
+
+/*
 #include <atomic>
 #include <memory>
 
@@ -36,3 +39,5 @@ namespace twPro {
     };
 
 }
+
+*/
