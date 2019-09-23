@@ -191,6 +191,8 @@ void controlThread()
     BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
 }
 
+#include "tasks/taskmanager.h"
+
 int main()
 {
     /*
@@ -207,9 +209,31 @@ int main()
         ct.join();
     }
     */
+    
+    {
+        twPro::TaskManager manager;
+        twPro::ApplicationParameters params;
 
-    std::thread ct(controlThread);
-    ct.join();
+        params.blockSize = 1024 * 1024;
+        params.source = "C:\\Users\\YoxFox\\Downloads\\alita_film.mkv";
+        params.destination = "C:\\Users\\YoxFox\\Downloads\\!result.sign";
+        params.workerType = twPro::WorkersTypes::MD5_hex;
 
-    //system("pause");
+        std::shared_ptr<twPro::ITask> task = manager.createTask(params);
+
+        if (!task) {
+            BLOG << "Incorrect task" << ELOG;
+            return 1;
+        }
+
+        std::atomic_bool stopFlag = false;
+
+        std::thread ct([&task, &stopFlag]() {
+            task->run(stopFlag);
+        });
+
+        ct.join();
+    }
+
+    system("pause");
 }

@@ -89,6 +89,7 @@ namespace twPro {
         }
 
         void listen(std::atomic_bool & _stopListening, const long long _waitListeningCycleMS = 10);
+        void listen(std::function<bool()> _stopCondition, const long long _waitListeningCycleMS = 10);
 
     private:
 

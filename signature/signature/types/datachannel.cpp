@@ -25,4 +25,19 @@ namespace twPro {
         }
     }
 
+    void DataChannel::listen(std::function<bool()> _stopCondition, const long long _waitListeningCycleMS)
+    {
+        // We forbid to have more than one listener at the time
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        while (!_stopCondition()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(_waitListeningCycleMS));
+            for (auto notify : m_notifiers) {
+                if (!notify->isEmpty()) {
+                    notify->processNotifications();
+                }
+            }
+        }
+    }
+
 }

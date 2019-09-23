@@ -152,6 +152,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\md5.h" />
+    <ClInclude Include="interfaces\itask.h" />
+    <ClInclude Include="types\applicationparameters.h" />
+    <ClInclude Include="tasks\filetofilebyblockstask.h" />
     <ClInclude Include="interfaces\idataconsumer.h" />
     <ClInclude Include="interfaces\idataproducer.h" />
     <ClInclude Include="interfaces\iworker.h" />
@@ -159,6 +162,7 @@
     <ClInclude Include="services\filewriterbyparts.h" />
     <ClInclude Include="services\workers\baseblockworker.h" />
     <ClInclude Include="services\workers\md5hashworker.h" />
+    <ClInclude Include="tasks\taskmanager.h" />
     <ClInclude Include="types\databuffer.h" />
     <ClInclude Include="types\datachannel.h" />
     <ClInclude Include="types\dataunit.h" />
@@ -167,11 +171,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdparty\md5.cpp" />
+    <ClCompile Include="tasks\filetofilebyblockstask.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="services\filereaderbyparts.cpp" />
     <ClCompile Include="services\filewriterbyparts.cpp" />
     <ClCompile Include="services\workers\baseblockworker.cpp" />
     <ClCompile Include="services\workers\md5hashworker.cpp" />
+    <ClCompile Include="tasks\taskmanager.cpp" />
     <ClCompile Include="types\databuffer.cpp" />
     <ClCompile Include="types\datachannel.cpp" />
     <ClCompile Include="types\pcqueue.cpp" />
