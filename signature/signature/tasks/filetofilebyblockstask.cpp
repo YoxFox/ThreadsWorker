@@ -96,6 +96,8 @@ namespace twPro {
             return stopFlag || _stopFlag;
         });
 
+        stopFlag = true;
+
         BLOG << "End of the listening" << ELOG;
 
         m_sourceBufferPtr->clear();

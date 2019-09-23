@@ -232,7 +232,13 @@ int main()
             task->run(stopFlag);
         });
 
+        std::thread stopTh([&stopFlag]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+            stopFlag = true;
+        });
+
         ct.join();
+        stopTh.join();
     }
 
     system("pause");
