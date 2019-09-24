@@ -19,12 +19,12 @@ namespace twPro {
         */
 
         /* Thread-safe */
-        void pPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept;
-        void cPush(const std::weak_ptr<DataUnit> & _valPtr) noexcept;
+        void pPush(const std::weak_ptr<twPro::DataUnit> & _valPtr) noexcept;
+        void cPush(const std::weak_ptr<twPro::DataUnit> & _valPtr) noexcept;
 
         /* Thread-safe */
-        std::weak_ptr<DataUnit> pPop() noexcept;
-        std::weak_ptr<DataUnit> cPop() noexcept;
+        std::weak_ptr<twPro::DataUnit> pPop() noexcept;
+        std::weak_ptr<twPro::DataUnit> cPop() noexcept;
 
         /* Common size of both queues */
         size_t size() const noexcept;
@@ -35,10 +35,13 @@ namespace twPro {
         bool producerEmpty() const noexcept;
         bool consumerEmpty() const noexcept;
 
+        // 
+        bool exists(const std::queue<std::weak_ptr<DataUnit>> & _item) const noexcept;
+
     private:
 
-        std::queue<std::weak_ptr<DataUnit>> m_producerQueue;
-        std::queue<std::weak_ptr<DataUnit>> m_consumerQueue;
+        std::queue<std::weak_ptr<twPro::DataUnit>> m_producerQueue;
+        std::queue<std::weak_ptr<twPro::DataUnit>> m_consumerQueue;
 
     };
 

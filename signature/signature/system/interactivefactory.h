@@ -12,23 +12,23 @@ namespace twPro {
     {
     public:
 
-        static InteractiveFactory * instance() noexcept {
-            static InteractiveFactory f;
+        static twPro::InteractiveFactory * instance() noexcept {
+            static twPro::InteractiveFactory f;
             return &f;
         }
 
-        std::shared_ptr<IInteractive> interactive() const noexcept;
-        void setInteractive(std::shared_ptr<IInteractive> _interactive) noexcept;
+        std::shared_ptr<twPro::IInteractive> interactive() const noexcept;
+        void setInteractive(std::shared_ptr<twPro::IInteractive> _interactive) noexcept;
 
     private:
 
         InteractiveFactory() noexcept;
 
-        std::shared_ptr<IInteractive> m_interactive;
+        std::shared_ptr<twPro::IInteractive> m_interactive;
 
     };
 
-    inline std::shared_ptr<IInteractive> interactive() noexcept { return InteractiveFactory::instance()->interactive(); }
+    inline std::shared_ptr<twPro::IInteractive> interactive() noexcept { return twPro::InteractiveFactory::instance()->interactive(); }
 
 }
 

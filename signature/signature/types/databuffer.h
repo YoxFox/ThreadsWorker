@@ -22,14 +22,14 @@ namespace twPro {
         void clear() noexcept;
 
         // If it returns empty pointer, it means the DataBuffer doesn't have data now
-        std::weak_ptr<DataUnit> producer_popWait(const long long _waitMilliseconds) noexcept;
-        std::weak_ptr<DataUnit> consumer_popWait(const long long _waitMilliseconds) noexcept;
+        std::weak_ptr<twPro::DataUnit> producer_popWait(const long long _waitMilliseconds) noexcept;
+        std::weak_ptr<twPro::DataUnit> consumer_popWait(const long long _waitMilliseconds) noexcept;
 
-        void producer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
-        void producer_pushNotUsed(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+        void producer_push(const std::weak_ptr<twPro::DataUnit> & _unitPtr) noexcept;
+        void producer_pushNotUsed(const std::weak_ptr<twPro::DataUnit> & _unitPtr) noexcept;
 
-        void consumer_push(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
-        void consumer_pushNotUsed(const std::weak_ptr<DataUnit> & _unitPtr) noexcept;
+        void consumer_push(const std::weak_ptr<twPro::DataUnit> & _unitPtr) noexcept;
+        void consumer_pushNotUsed(const std::weak_ptr<twPro::DataUnit> & _unitPtr) noexcept;
 
     private:
 
@@ -39,8 +39,8 @@ namespace twPro {
         size_t m_bufferCapacity;
         size_t m_bufferUnitSize;
 
-        PCQueue m_pcQueue;
-        std::stack<std::shared_ptr<DataUnit>> m_availableUnits;
+        twPro::PCQueue m_pcQueue;
+        std::stack<std::shared_ptr<twPro::DataUnit>> m_availableUnits;
 
         std::condition_variable m_cv;
         std::condition_variable m_clear_cv;

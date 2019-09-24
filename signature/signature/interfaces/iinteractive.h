@@ -24,7 +24,7 @@ namespace twPro {
             Progress(const std::string & _title, const size_t & _current, const size_t & _total) : title(_title), current(_current), total(_total) {}
         };
 
-        virtual std::shared_ptr<twPro::Notifier<Progress>> createProgressBar() noexcept = 0;
+        virtual std::shared_ptr<twPro::Notifier<twPro::IInteractive::Progress>> createProgressBar() noexcept = 0;
 
         enum class MessageType : unsigned int
         {
@@ -33,7 +33,7 @@ namespace twPro {
             ERROR_m
         };
 
-        virtual void pushMessage(const std::string _message, const MessageType & _type = MessageType::INFO_m) noexcept = 0;
+        virtual void pushMessage(const std::string _message, const twPro::IInteractive::MessageType & _type = twPro::IInteractive::MessageType::INFO_m) noexcept = 0;
     };
 
 }

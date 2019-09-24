@@ -13,11 +13,11 @@ namespace twPro {
         TaskManager() noexcept;
         ~TaskManager() noexcept;
 
-        std::shared_ptr<twPro::ITask> createTask(const ApplicationParameters & _params) const noexcept;
+        std::shared_ptr<twPro::ITask> createTask(const twPro::ApplicationParameters & _params) const noexcept;
 
     private:
 
-        std::shared_ptr<twPro::ITask> createMD5Task(const ApplicationParameters & _params) const noexcept;
+        std::shared_ptr<twPro::ITask> createMD5Task(const twPro::ApplicationParameters & _params) const noexcept;
 
     };
 

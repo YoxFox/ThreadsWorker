@@ -21,10 +21,10 @@ namespace twPro {
     class FileToFileByBlocksTask final : public twPro::ITask
     {
     public:
-        FileToFileByBlocksTask(const FileToFileByBlocksTask_params & _params) noexcept;
+        FileToFileByBlocksTask(const twPro::FileToFileByBlocksTask_params & _params) noexcept;
         ~FileToFileByBlocksTask() noexcept;
 
-        inline void setWorker(const std::shared_ptr<IWorker> & _worker) noexcept
+        inline void setWorker(const std::shared_ptr<twPro::IWorker> & _worker) noexcept
         {
             m_worker = _worker;
         }
@@ -46,8 +46,8 @@ namespace twPro {
             _pResult(const bool _ret) : isError(!_ret) {}
         };
 
-        FileToFileByBlocksTask_params m_params;
-        std::shared_ptr<IWorker> m_worker;
+        twPro::FileToFileByBlocksTask_params m_params;
+        std::shared_ptr<twPro::IWorker> m_worker;
         std::mutex m_mutex;
 
         std::shared_ptr<twPro::FileReaderByParts> m_sourceFilePtr;

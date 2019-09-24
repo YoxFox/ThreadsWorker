@@ -27,7 +27,7 @@ namespace twPro {
         void run(std::atomic_bool & _stopFlag);
 
         std::shared_ptr<twPro::Notifier<twPro::IInteractive::Progress>> createProgressBar() noexcept override;
-        void pushMessage(const std::string _message, const MessageType & _type = MessageType::INFO_m) noexcept override;
+        void pushMessage(const std::string _message, const twPro::IInteractive::MessageType & _type = twPro::IInteractive::MessageType::INFO_m) noexcept override;
 
     private:
 
