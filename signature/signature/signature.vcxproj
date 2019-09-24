@@ -154,8 +154,10 @@
   <ItemGroup>
     <ClInclude Include="3rdparty\md5.h" />
     <ClInclude Include="interfaces\itask.h" />
+    <ClInclude Include="system\argumentsparser.h" />
     <ClInclude Include="services\threadpool.h" />
-    <ClInclude Include="types\applicationparameters.h" />
+    <ClInclude Include="system\applicationcore.h" />
+    <ClInclude Include="system\applicationparameters.h" />
     <ClInclude Include="tasks\filetofilebyblockstask.h" />
     <ClInclude Include="interfaces\idataconsumer.h" />
     <ClInclude Include="interfaces\idataproducer.h" />
@@ -173,7 +175,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdparty\md5.cpp" />
+    <ClCompile Include="system\argumentsparser.cpp" />
     <ClCompile Include="services\threadpool.cpp" />
+    <ClCompile Include="system\applicationcore.cpp" />
     <ClCompile Include="tasks\filetofilebyblockstask.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="services\filereaderbyparts.cpp" />

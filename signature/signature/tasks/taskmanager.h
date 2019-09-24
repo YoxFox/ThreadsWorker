@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "../interfaces/itask.h"
-#include "../types/applicationparameters.h"
+#include "../system/applicationparameters.h"
 
 namespace twPro {
 

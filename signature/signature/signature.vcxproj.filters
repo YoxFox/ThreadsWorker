@@ -63,10 +63,16 @@
     <ClInclude Include="tasks\taskmanager.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="types\applicationparameters.h">
+    <ClInclude Include="services\threadpool.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="services\threadpool.h">
+    <ClInclude Include="system\applicationcore.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="system\applicationparameters.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="system\argumentsparser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -105,6 +111,12 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="services\threadpool.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="system\applicationcore.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="system\argumentsparser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

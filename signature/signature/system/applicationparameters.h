@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "workerstypes.h"
+#include "../types/workerstypes.h"
 
 namespace twPro {
 
