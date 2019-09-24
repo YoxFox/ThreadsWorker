@@ -40,8 +40,8 @@ namespace twPro {
         twPro::ApplicationParameters params = twPro::ArgumentsParser::parseParameters(argc, argv);
 
         params.blockSize = 1024 * 1024;
-        params.source = "C:\\Users\\YoxFox\\Downloads\\alita_film.mkv";
-        //params.source = "C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z";
+        //params.source = "C:\\Users\\YoxFox\\Downloads\\alita_film.mkv";
+        params.source = "C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z";
         params.destination = "C:\\Users\\YoxFox\\Downloads\\!result.sign";
         params.workerType = twPro::WorkersTypes::MD5_hex;
 
