@@ -1,4 +1,4 @@
-#include "consoleinteractive.h"
+﻿#include "consoleinteractive.h"
 
 #include <iostream>
 
@@ -26,6 +26,16 @@ namespace twPro {
         ShowConsoleCursor(false);
         ColorChanger ch(FOREGROUND_GREEN); (void)ch; /* UNUSED */
 
+        // IMPORTANT: It doesn't work on console without ANSI/VT100 escape sequences
+        // So, we use simpler way to display the progress
+
+        size_t percent_progress = (_progress.current * 100) / _progress.total;
+        printf(" %s [%3d%%]\r", _progress.title, percent_progress);
+
+        return;
+
+        // ========= OLD GOOD SOLUTION =========
+
         // Overwrite protection: it has incorrect behaviour for narrow console
         size_t minConsoleWidth = _progress.title.length() + progressBarWidth + /* service */ 10;
         if ((size_t)consoleWidth() < minConsoleWidth) {
@@ -47,6 +57,10 @@ namespace twPro {
 
     void ConsoleInteractive::moveProgressBarDown() noexcept
     {
+        // IMPORTANT: It doesn't work on console without ANSI/VT100 escape sequences
+        // So, we use simpler way to display the progress
+        return;
+
         printf("%c[2K", 27); // clear current string
         printf("\n");
         showProgress(m_currentProgress);
@@ -67,7 +81,7 @@ namespace twPro {
     ConsoleInteractive::ConsoleInteractive() noexcept
     {
         ShowConsoleCursor(false);
-        ColorChanger ch(); (void)ch; /* UNUSED */
+        ColorChanger ch; (void)ch; /* UNUSED */
     }
 
     ConsoleInteractive::~ConsoleInteractive() noexcept
