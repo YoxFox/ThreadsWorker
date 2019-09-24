@@ -2,7 +2,7 @@
 
 namespace twPro {
 
-    InteractiveFactory::InteractiveFactory() :
+    InteractiveFactory::InteractiveFactory() noexcept :
         m_interactive(nullptr)
     {
     }
@@ -12,7 +12,7 @@ namespace twPro {
         return m_interactive;
     }
 
-    void InteractiveFactory::setInteractive(std::shared_ptr<IInteractive> _interactive)
+    void InteractiveFactory::setInteractive(std::shared_ptr<IInteractive> _interactive) noexcept
     {
         m_interactive = _interactive;
     }

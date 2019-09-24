@@ -8,14 +8,14 @@ namespace twPro {
     {
     public:
 
-        static twPro::ApplicationParameters parseParameters(int argc, const char *argv[]);
+        static twPro::ApplicationParameters parseParameters(int argc, const char *argv[]) noexcept;
 
     private:
 
-        ArgumentsParser();
-        ~ArgumentsParser();
+        ArgumentsParser() noexcept;
+        ~ArgumentsParser() noexcept;
 
-        static twPro::WorkersTypes workTypeByString(const std::string & _val);
+        static twPro::WorkersTypes workTypeByString(const std::string & _val) noexcept;
 
     };
 

@@ -19,8 +19,7 @@ namespace twPro {
         m_isStopped.store(false);
 
         if (!m_dataSource || !m_resultStorage) {
-            // throw excp
-            return;
+            throw std::runtime_error("Internal error: data buffer doesn't exist");
         }
 
         while (!_stopFlag.load()) {
@@ -40,17 +39,34 @@ namespace twPro {
 
             if (task_unit->dataSize > maxConsumingDataUnitSize()) {
                 m_resultStorage->producer_pushNotUsed(result_unit);
-                // throw exception
-                break;
+                throw std::runtime_error("Internal error: incorrect buffer size for source data");
             }
 
             size_t maxProducingDataUnitSize = maxProducingDataUnitSizeByConsumingDataUnitSize(task_unit->dataSize);
             if (result_unit->size < maxProducingDataUnitSize) {
-                // throw exception
-                break;
+                throw std::runtime_error("Internal error: incorrect buffer size for result data");
             }
 
-            doBlockWork(task_unit, result_unit);
+            auto returnResources = [this, &result_unit, &task_unit]() {
+                m_resultStorage->producer_pushNotUsed(result_unit);
+                m_dataSource->consumer_pushNotUsed(task_unit);
+            };
+
+            try {
+                doBlockWork(task_unit, result_unit);
+            }
+            catch (const std::exception& ex) {
+                returnResources();
+                throw ex;
+            }
+            catch (const std::string& ex) {
+                returnResources();
+                throw ex;
+            }
+            catch (...) {
+                returnResources();
+                throw std::runtime_error("Internal error: the worker returns unknown error");
+            }
 
             result_unit->id = task_unit->id;
             result_unit->dataSize = maxProducingDataUnitSize;

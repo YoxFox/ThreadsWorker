@@ -17,7 +17,7 @@ namespace twPro {
     public:
 
         FileReaderByParts(const std::string & _filePath);
-        ~FileReaderByParts();
+        ~FileReaderByParts() noexcept;
 
         // Output data buffer for producing
         void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;

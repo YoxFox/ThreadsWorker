@@ -6,7 +6,7 @@
 
 namespace twPro {
 
-    twPro::ApplicationParameters ArgumentsParser::parseParameters(int argc, const char * argv[])
+    twPro::ApplicationParameters ArgumentsParser::parseParameters(int argc, const char * argv[]) noexcept
     {
         twPro::ApplicationParameters params;
 
@@ -18,8 +18,11 @@ namespace twPro {
                 ("source,s", boost::program_options::value<std::string>(), "Some data source (file path, ip)")
                 ("destination,d", boost::program_options::value<std::string>(), "Some data storage of results (file path, ip)")
                 ("algorithm,a", boost::program_options::value<std::string>(), "Type of an algorithm for working on data")
+                ("algorithms", "Available algorithms:\n"
+                               "md5_hex - Hex (32 bits) output type md5\n"
+                               "md5_byte - 2 bytes (16 bits) output type md5 (IN DEVELOPMENT)")
                 ("block,b", boost::program_options::value<size_t>(), "Data block size for an algorithm");
-
+             
             boost::program_options::variables_map vm;
             store(parse_command_line(argc, argv, desc), vm);
 
@@ -48,15 +51,15 @@ namespace twPro {
         return params;
     }
 
-    ArgumentsParser::ArgumentsParser()
+    ArgumentsParser::ArgumentsParser() noexcept
     {
     }
 
-    ArgumentsParser::~ArgumentsParser()
+    ArgumentsParser::~ArgumentsParser() noexcept
     {
     }
-
-    twPro::WorkersTypes ArgumentsParser::workTypeByString(const std::string & _val)
+     
+    twPro::WorkersTypes ArgumentsParser::workTypeByString(const std::string & _val) noexcept
     {
         if (_val == "md5_hex" || _val == "md5") {
             return twPro::WorkersTypes::MD5_hex;

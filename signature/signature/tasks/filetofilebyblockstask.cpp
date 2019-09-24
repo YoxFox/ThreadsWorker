@@ -7,27 +7,32 @@
 
 namespace twPro {
 
+    static size_t OPTIMAL_NOTIFIER_QUEUE_SIZE = 5;
+
     FileToFileByBlocksTask::FileToFileByBlocksTask(const FileToFileByBlocksTask_params & _params) noexcept : 
         m_params(_params), m_worker(nullptr)
     {
     }
 
-    FileToFileByBlocksTask::~FileToFileByBlocksTask()
+    FileToFileByBlocksTask::~FileToFileByBlocksTask() noexcept
     {
     }
+    
+    // NOTE: We don't separate this method by methods because this is more readable and explicit way to show all step by step
+    // It has to look like a script (scenario)
 
     void FileToFileByBlocksTask::run(std::atomic_bool & _stopFlag)
     {
         // We forbid to run it from different places at the time
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        B_INFO << "++++++++++ Begin control ++++++++++" << E_INFO;
+        if (m_params.blockSize < 1) {
+            throw std::runtime_error("Block size can't be less than 1");
+        } else if (m_params.resultFilePath.empty() || m_params.sourceFilePath.empty()) {
+            throw std::runtime_error("File path can't be empty");
+        }
 
-        std::atomic_bool stopFlag = false;
-
-        // === SET RESOURCES  ===
-
-        B_INFO << ">>> Current block size: " << m_params.blockSize << " <<<" << E_INFO;
+        // === SETUP RESOURCES  ===
 
         m_sourceBufferPtr.reset(new twPro::DataBuffer(20, m_params.blockSize));
         m_resultBufferPtr.reset(new twPro::DataBuffer(20, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
@@ -41,33 +46,89 @@ namespace twPro {
         m_resultFilePtr.reset(new twPro::FileWriterByParts(m_params.resultFilePath));
         m_resultFilePtr->setConsumerBuffer(m_resultBufferPtr);
 
-        // === SET NOTIFIERS ===
-
-        twPro::DataChannel ch;
-        std::shared_ptr<twPro::Notifier<size_t>> readerNotifier = ch.createNotifier<size_t>(5);
-        std::shared_ptr<twPro::Notifier<size_t>> writerNotifier = ch.createNotifier<size_t>(5);
-
         size_t totalData = m_sourceFilePtr->totalData();
-        B_INFO << "File length: " << totalData << E_INFO;
-
         size_t totalWriteDataUnits = ((totalData / m_params.blockSize) + (totalData % m_params.blockSize > 0 ? 1 : 0));
-        B_INFO << "File write units: " << totalWriteDataUnits << E_INFO;
 
-        m_sourceFilePtr->setNotifier_currentProducedDataUnits(readerNotifier);
-        m_resultFilePtr->setNotifier_currentConsumedDataUnits(writerNotifier);
+        // === PRINT MAIN INFO ===
+
+        B_INFO << "Task block size: " << m_params.blockSize << " bytes" << E_INFO;
+        B_INFO << "Source data length: " << totalData << " bytes" << E_INFO;
 
         // === RUN WORKERS IN THREADS ===
 
-        auto fileReaderJob = [this, &stopFlag]() {
-            m_sourceFilePtr->work(stopFlag);
+        std::atomic_bool stopFlag = false;
+        _pResult ret = true;
+
+        auto fileReaderJob = [this, &stopFlag, &ret]() {
+
+            try {
+                m_sourceFilePtr->work(stopFlag);
+            }
+            catch (const std::exception& ex) {
+                ret = false;
+                ret.error = ex.what();
+            }
+            catch (const std::string& ex) {
+                ret = false;
+                ret.error = ex;
+            }
+            catch (...) {
+                ret = false;
+                ret.error = "File reader returns unknown error";
+            }
+
+            if (!ret) {
+                stopFlag = true;
+            }
+
         };
 
-        auto fileWriterJob = [this, &stopFlag]() {
-            m_resultFilePtr->work(stopFlag);
+        auto fileWriterJob = [this, &stopFlag, &ret]() {
+
+            try {
+                m_resultFilePtr->work(stopFlag);
+            }
+            catch (const std::exception& ex) {
+                ret = false;
+                ret.error = ex.what();
+            }
+            catch (const std::string& ex) {
+                ret = false;
+                ret.error = ex;
+            }
+            catch (...) {
+                ret = false;
+                ret.error = "File writer returns unknown error";
+            }
+
+            if (!ret) {
+                stopFlag = true;
+            }
+
         };
 
-        auto workerJob = [this, &stopFlag]() {
-            m_worker->work(stopFlag);
+        auto workerJob = [this, &stopFlag, &ret]() {
+
+            try {
+                m_worker->work(stopFlag);
+            }
+            catch (const std::exception& ex) {
+                ret = false;
+                ret.error = ex.what();
+            }
+            catch (const std::string& ex) {
+                ret = false;
+                ret.error = ex;
+            }
+            catch (...) {
+                ret = false;
+                ret.error = "Worker returns unknown error";
+            }
+
+            if (!ret) {
+                stopFlag = true;
+            }
+
         };
 
         ThreadPool tPool;
@@ -83,56 +144,54 @@ namespace twPro {
             for (size_t i = 1; i <= curAvailableThreads - 1; ++i) { tPool.poolTask(workerJob); }
         }
 
-        // === RESULTS LISTENING ===
+        // === SETUP NOTIFIERS ===
 
-        readerNotifier->setCallBack([&totalWriteDataUnits](const size_t & _val) {
-            if (_val >= totalWriteDataUnits) {
-                B_INFO << "Reader is done" << E_INFO;
-            }
-        });
+        twPro::DataChannel ch;
+        auto writerNotifier = ch.createNotifier<size_t>(OPTIMAL_NOTIFIER_QUEUE_SIZE);
+        auto progress = interactive()->createProgressBar();
 
-        std::shared_ptr<twPro::Notifier<IInteractive::Progress>> progress = interactive()->createProgressBar();
+        m_resultFilePtr->setNotifier_currentConsumedDataUnits(writerNotifier);
 
         writerNotifier->setCallBack([&totalWriteDataUnits, &stopFlag, &progress](const size_t & _val) {
 
-            progress->notify(IInteractive::Progress("Signing", _val, totalWriteDataUnits));
+            progress->notify(IInteractive::Progress("Progress", _val, totalWriteDataUnits));
             
             if (_val >= totalWriteDataUnits) {
                 stopFlag = true;
-                B_INFO << "Writer is done" << E_INFO;
             }
+
         });
 
-        B_INFO << "Begin of the listening" << E_INFO;
+        // === LINSTENING ===
 
         ch.listen([&stopFlag, &_stopFlag]() -> bool {
             return stopFlag || _stopFlag;
         });
 
-        progress->notify(IInteractive::Progress("Signing", 100, 100));
+        if (!ret) {
+            interactive()->pushMessage(ret.error.empty() ? ret.error : "Unknown internal error",
+                IInteractive::MessageType::ERROR_m);
+        }
+        else {
+            // 100%
+            progress->notify(IInteractive::Progress("Signing", 100, 100));
+        }
+
         stopFlag = true;
 
-        B_INFO << "End of the listening" << E_INFO;
+        // === CLEAR ALL DATA AND SERVICES ===
 
         m_sourceBufferPtr->clear();
         m_sourceBufferPtr.reset();
 
-        B_INFO << "Data source was cleared" << E_INFO;
-
         m_resultBufferPtr->clear();
         m_resultBufferPtr.reset();
-
-        B_INFO << "Result storage was cleared" << E_INFO;
 
         m_worker.reset();
         m_sourceFilePtr.reset();
         m_resultFilePtr.reset();
 
-        B_INFO << "Waiting thread ends" << E_INFO;
-
         tPool.join();
-
-        B_INFO << "++++++++++ End control ++++++++++\n" << E_INFO;
     }
 
 }

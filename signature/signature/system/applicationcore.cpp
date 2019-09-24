@@ -7,68 +7,90 @@
 #include "../system/interactivefactory.h"
 #include "argumentsparser.h"
 
-#include <mutex>
-#include <iostream>
-static std::mutex log_mutex;
-#define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
-#define ELOG "\n";}
-
 namespace twPro {
 
-    ApplicationCore::ApplicationCore()
+    ApplicationCore::ApplicationCore() noexcept
     {
     }
 
-    ApplicationCore::~ApplicationCore()
+    ApplicationCore::~ApplicationCore() noexcept
     {
     }
 
     int ApplicationCore::exec(int argc, const char *argv[]) noexcept
     {
-        // SETUP INTERACTIVE
+        // === SETUP INTERACTIVE ===
 
         std::shared_ptr<twPro::ConsoleInteractive> interactive(new twPro::ConsoleInteractive());
         twPro::InteractiveFactory::instance()->setInteractive(interactive);
 
-        std::atomic_bool stopInteractive = false;
-        std::thread interactiveThread([&stopInteractive, interactive]() {
-            interactive->run(stopInteractive);
+        std::atomic_bool stopInteractiveAtom = false;
+        std::thread interactiveThread([&stopInteractiveAtom, interactive]() {
+            interactive->run(stopInteractiveAtom);
         });
 
-        // TASK
+        auto stopInteractive = [&stopInteractiveAtom, &interactiveThread]() {
+            // Just sleep for interactive if it has some view events
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            stopInteractiveAtom = true;
+            interactiveThread.join();
+        };
+
+        // === TASK ===
 
         twPro::ApplicationParameters params = twPro::ArgumentsParser::parseParameters(argc, argv);
 
+        /*
         params.blockSize = 1024 * 1024;
         //params.source = "C:\\Users\\YoxFox\\Downloads\\alita_film.mkv";
         params.source = "C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z";
         params.destination = "C:\\Users\\YoxFox\\Downloads\\!result.sign";
         params.workerType = twPro::WorkersTypes::MD5_hex;
+        */
+
+        if (params.workerType == WorkersTypes::Unknown) {
+            interactive->pushMessage("Incorrect (unknown) task", IInteractive::MessageType::ERROR_m);
+            stopInteractive();
+            return 0;
+        }
 
         twPro::TaskManager manager;
 
         std::shared_ptr<twPro::ITask> task = manager.createTask(params);
 
         if (!task) {
-            BLOG << "Incorrect task" << ELOG;
-            return 1;
+            interactive->pushMessage("Incorrect task", IInteractive::MessageType::ERROR_m);
+            stopInteractive();
+            return 0;
         }
 
         std::atomic_bool stopFlag = false;
 
-        std::thread ct([&task, &stopFlag]() {
-            task->run(stopFlag);
+        std::thread ct([&task, &stopFlag, &interactive]() {
+            try {
+                task->run(stopFlag);
+            }
+            catch (const std::exception& ex) {
+                interactive->pushMessage(ex.what(), IInteractive::MessageType::ERROR_m);
+                return;
+            }
+            catch (const std::string& ex) {
+                interactive->pushMessage(ex, IInteractive::MessageType::ERROR_m);
+                return;
+            }
+            catch (...) {
+                interactive->pushMessage("The task returns unknown error", IInteractive::MessageType::ERROR_m);
+                return;
+            }
+
+            interactive->pushMessage("The task successfully done", IInteractive::MessageType::INFO_m);
         });
 
         ct.join();
 
-        // Just sleep for interactive if it has some view events
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        stopInteractive();
 
-        stopInteractive = true;
-        interactiveThread.join();
-
-        system("pause");
         return 0;
     }
 

@@ -33,6 +33,19 @@ namespace twPro {
 
     private:
 
+        // Replace it by common result object
+        struct _pResult
+        {
+            std::string error;
+            bool isError;
+
+            inline operator bool() const { return !isError; }
+
+            _pResult(const std::string & _message) : error(_message), isError(true) {}
+            _pResult() : isError(false) {}
+            _pResult(const bool _ret) : isError(!_ret) {}
+        };
+
         FileToFileByBlocksTask_params m_params;
         std::shared_ptr<IWorker> m_worker;
         std::mutex m_mutex;

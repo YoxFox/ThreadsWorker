@@ -9,16 +9,27 @@ namespace twPro {
         m_consumedDataLength(0),
         m_buffer(nullptr)
     {
-        m_stream.open(_filePath, std::ifstream::binary);
+        try {
+            m_stream.open(_filePath, std::ofstream::binary);
+        }
+        catch (std::ofstream::failure e) {
+            throw e;
+        }
 
         if (!m_stream) {
-            throw std::runtime_error("Can't open file to read: " + _filePath);
+            throw std::runtime_error("Can't open file to write: " + _filePath);
         }
     }
 
-    FileWriterByParts::~FileWriterByParts()
+    FileWriterByParts::~FileWriterByParts() noexcept
     {
-        m_stream.close();
+        try {
+            m_stream.close();
+        }
+        catch (std::ofstream::failure e) {
+            // TODO: Create solution
+            /* DO NOTHING = We can't to do anything, maybe */
+        }
     }
 
     void FileWriterByParts::setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
@@ -32,8 +43,7 @@ namespace twPro {
         std::lock_guard<std::mutex> lock(work_mutex);
 
         if (!m_buffer) {
-            // throw excp
-            return;
+            throw std::runtime_error("Internal error: data buffer doesn't exist");
         }
 
         while (!_stopFlag.load()) {
@@ -44,11 +54,18 @@ namespace twPro {
                 continue;
             }
 
-            size_t offset = unit->id * unit->size;
-            m_stream.seekp(offset, std::ios_base::beg);
+            try {
+                // setup offset in the output file
+                size_t offset = unit->id * unit->size;
+                m_stream.seekp(offset, std::ios_base::beg);
 
-            // write
-            m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
+                // write
+                m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
+            }
+            catch (std::ofstream::failure e) {
+                m_buffer->consumer_pushNotUsed(unit);
+                throw e;
+            }
 
             ++m_consumedDataBlocks;
             m_consumedDataLength += unit->dataSize;

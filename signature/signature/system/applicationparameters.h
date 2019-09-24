@@ -11,7 +11,9 @@ namespace twPro {
         twPro::WorkersTypes workerType;
         std::string source;
         std::string destination;
-        int blockSize;
+        size_t blockSize;
+
+        ApplicationParameters() : blockSize(0) {}
     };
 
 }

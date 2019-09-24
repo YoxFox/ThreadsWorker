@@ -6,19 +6,38 @@ namespace twPro {
 
     FileReaderByParts::FileReaderByParts(const std::string & _filePath) :
         m_isDone(false), m_isStopped(true), m_idPart(0), m_producedDataLength(0), m_fileLength(0),
-        m_buffer(nullptr), m_stream(_filePath, std::ifstream::binary)
+        m_buffer(nullptr)
     {
+        try {
+            m_stream.open(_filePath, std::ifstream::binary);
+        }
+        catch (std::ifstream::failure e) {
+            throw e;
+        }
+
         if (!m_stream) {
             throw std::runtime_error("Can't open file to read: " + _filePath);
         }
 
-        // get length
-        m_stream.seekg(0, std::ios_base::end);
-        m_fileLength = m_stream.tellg();
+        try {
+            // get length
+            m_stream.seekg(0, std::ios_base::end);
+            m_fileLength = m_stream.tellg();
+        }
+        catch (std::ifstream::failure e) {
+            throw e;
+        }
     }
 
-    FileReaderByParts::~FileReaderByParts()
+    FileReaderByParts::~FileReaderByParts() noexcept
     {
+        try {
+            m_stream.close();
+        }
+        catch (std::ifstream::failure e) {
+            // TODO: Create solution
+            /* DO NOTHING = We can't to do anything, maybe */
+        }
     }
 
     void FileReaderByParts::setProducerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
@@ -36,8 +55,7 @@ namespace twPro {
         }
 
         if (!m_buffer) {
-            // throw excp
-            return;
+            throw std::runtime_error("Internal error: data buffer doesn't exist");
         }
 
         while (!_stopFlag.load()) {
@@ -55,14 +73,21 @@ namespace twPro {
                 break;
             }
 
-            m_stream.seekg(offset, std::ios_base::beg);
-
             // get block length
             size_t availableDataSize = m_fileLength - offset;
             size_t blockLength = availableDataSize > unit->size ? unit->size : availableDataSize;
 
-            // read
-            m_stream.read(reinterpret_cast<char*>(unit->ptr), blockLength);
+            try {
+                // Set pointer to offset value
+                m_stream.seekg(offset, std::ios_base::beg);
+
+                // read
+                m_stream.read(reinterpret_cast<char*>(unit->ptr), blockLength);
+            }
+            catch (std::ifstream::failure e) {
+                m_buffer->producer_pushNotUsed(unit);
+                throw e;
+            }
 
             unit->id = m_idPart;
             unit->dataSize = blockLength;

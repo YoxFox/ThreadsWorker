@@ -4,11 +4,6 @@
 
 namespace twPro {
 
-    class bad_data_unit_alloc : public std::bad_alloc {
-    public:
-        explicit bad_data_unit_alloc() : std::bad_alloc() {}
-    };
-
     template <typename Allocator = std::allocator<char>>
     struct DataUnit_alloc final
     {
@@ -34,7 +29,7 @@ namespace twPro {
         ptr(m_allocator.allocate(_size)), size(_size), dataSize(_size), id(0), m_allocator(_a)
     {
         if (!this->ptr) {
-            throw bad_data_unit_alloc();
+            throw std::runtime_error("Bad allocation memory");
         }
     }
 

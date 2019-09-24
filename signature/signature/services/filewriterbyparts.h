@@ -18,7 +18,7 @@ namespace twPro {
     public:
 
         FileWriterByParts(const std::string & _filePath);
-        ~FileWriterByParts();
+        ~FileWriterByParts() noexcept;
 
         // Output data buffer for producing
         void setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;

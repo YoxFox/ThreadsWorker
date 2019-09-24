@@ -21,9 +21,14 @@ namespace twPro {
             try {
                 unit = new DataUnit(_bufferUnitSize);
             }
-            catch (bad_data_unit_alloc &) {
-                clear();
-                throw bad_data_unit_alloc();
+            catch (const std::exception& ex) {
+                throw ex;
+            }
+            catch (const std::string& ex) {
+                throw ex;
+            }
+            catch (...) {
+                throw std::runtime_error("Memory allocation failed");
             }
 
             std::shared_ptr<DataUnit> sUnitPtr(unit);
