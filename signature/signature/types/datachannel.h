@@ -80,9 +80,12 @@ namespace twPro {
         DataChannel() noexcept;
         ~DataChannel() noexcept;
 
+        // We can't use std::numeric_limits<size_t>::max() as default value because some system file defines "max" as macro
+
         template<class T>
-        std::shared_ptr<Notifier<T>> createNotifier(const size_t _maxQueueItems = std::numeric_limits<size_t>::max()) noexcept
+        std::shared_ptr<Notifier<T>> createNotifier(const size_t _maxQueueItems = ULLONG_MAX) noexcept
         {
+            std::lock_guard<std::mutex> lock(m_new_notifier_mutex);
             std::shared_ptr<Notifier<T>> sPtr(new Notifier<T>(_maxQueueItems));
             m_notifiers.push_back(sPtr);
             return sPtr;
@@ -95,6 +98,7 @@ namespace twPro {
 
         std::vector<std::shared_ptr<INotifier>> m_notifiers;
         std::mutex m_mutex;
+        std::mutex m_new_notifier_mutex;
 
     };
 

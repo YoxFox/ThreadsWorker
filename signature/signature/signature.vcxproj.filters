@@ -75,6 +75,15 @@
     <ClInclude Include="system\argumentsparser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="interfaces\iinteractive.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="system\interactivefactory.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="services\consoleinteractive.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -117,6 +126,12 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="system\argumentsparser.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="system\interactivefactory.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="services\consoleinteractive.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

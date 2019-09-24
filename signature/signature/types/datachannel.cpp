@@ -17,6 +17,7 @@ namespace twPro {
 
         while (!_stopListening) {
             std::this_thread::sleep_for(std::chrono::milliseconds(_waitListeningCycleMS));
+            std::lock_guard<std::mutex> lock(m_new_notifier_mutex);
             for (auto notify : m_notifiers) {
                 if (!notify->isEmpty()) {
                     notify->processNotifications();
@@ -32,6 +33,7 @@ namespace twPro {
 
         while (!_stopCondition()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(_waitListeningCycleMS));
+            std::lock_guard<std::mutex> lock(m_new_notifier_mutex);
             for (auto notify : m_notifiers) {
                 if (!notify->isEmpty()) {
                     notify->processNotifications();

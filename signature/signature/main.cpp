@@ -10,6 +10,7 @@
 //   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
 
 #include "system/applicationcore.h"
+#include <iostream>
 
 int main(int argc, const char *argv[])
 {

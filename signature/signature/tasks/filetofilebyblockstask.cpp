@@ -1,11 +1,9 @@
 #include "filetofilebyblockstask.h"
 
 #include "../services/threadpool.h"
+#include "../system/interactivefactory.h"
 
-#include <iostream>
-static std::mutex log_mutex;
-#define BLOG { std::lock_guard<std::mutex> lock(log_mutex); std::cout 
-#define ELOG "\n";}
+#include <sstream> 
 
 namespace twPro {
 
@@ -23,13 +21,13 @@ namespace twPro {
         // We forbid to run it from different places at the time
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        BLOG << "++++++++++ Begin control ++++++++++" << ELOG;
+        B_INFO << "++++++++++ Begin control ++++++++++" << E_INFO;
 
         std::atomic_bool stopFlag = false;
 
         // === SET RESOURCES  ===
 
-        BLOG << ">>> Current block size: " << m_params.blockSize << " <<<" << ELOG;
+        B_INFO << ">>> Current block size: " << m_params.blockSize << " <<<" << E_INFO;
 
         m_sourceBufferPtr.reset(new twPro::DataBuffer(20, m_params.blockSize));
         m_resultBufferPtr.reset(new twPro::DataBuffer(20, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
@@ -50,10 +48,10 @@ namespace twPro {
         std::shared_ptr<twPro::Notifier<size_t>> writerNotifier = ch.createNotifier<size_t>(5);
 
         size_t totalData = m_sourceFilePtr->totalData();
-        BLOG << "File length: " << totalData << ELOG;
+        B_INFO << "File length: " << totalData << E_INFO;
 
         size_t totalWriteDataUnits = ((totalData / m_params.blockSize) + (totalData % m_params.blockSize > 0 ? 1 : 0));
-        BLOG << "File write units: " << totalWriteDataUnits << ELOG;
+        B_INFO << "File write units: " << totalWriteDataUnits << E_INFO;
 
         m_sourceFilePtr->setNotifier_currentProducedDataUnits(readerNotifier);
         m_resultFilePtr->setNotifier_currentConsumedDataUnits(writerNotifier);
@@ -89,46 +87,52 @@ namespace twPro {
 
         readerNotifier->setCallBack([&totalWriteDataUnits](const size_t & _val) {
             if (_val >= totalWriteDataUnits) {
-                BLOG << "Reader is done" << ELOG;
+                B_INFO << "Reader is done" << E_INFO;
             }
         });
 
-        writerNotifier->setCallBack([&totalWriteDataUnits, &stopFlag](const size_t & _val) {
+        std::shared_ptr<twPro::Notifier<IInteractive::Progress>> progress = interactive()->createProgressBar();
+
+        writerNotifier->setCallBack([&totalWriteDataUnits, &stopFlag, &progress](const size_t & _val) {
+
+            progress->notify(IInteractive::Progress("Signing", _val, totalWriteDataUnits));
+            
             if (_val >= totalWriteDataUnits) {
                 stopFlag = true;
-                BLOG << "Writer is done" << ELOG;
+                B_INFO << "Writer is done" << E_INFO;
             }
         });
 
-        BLOG << "Begin of the listening" << ELOG;
+        B_INFO << "Begin of the listening" << E_INFO;
 
         ch.listen([&stopFlag, &_stopFlag]() -> bool {
             return stopFlag || _stopFlag;
         });
 
+        progress->notify(IInteractive::Progress("Signing", 100, 100));
         stopFlag = true;
 
-        BLOG << "End of the listening" << ELOG;
+        B_INFO << "End of the listening" << E_INFO;
 
         m_sourceBufferPtr->clear();
         m_sourceBufferPtr.reset();
 
-        BLOG << "Data source was cleared" << ELOG;
+        B_INFO << "Data source was cleared" << E_INFO;
 
         m_resultBufferPtr->clear();
         m_resultBufferPtr.reset();
 
-        BLOG << "Result storage was cleared" << ELOG;
+        B_INFO << "Result storage was cleared" << E_INFO;
 
         m_worker.reset();
         m_sourceFilePtr.reset();
         m_resultFilePtr.reset();
 
-        BLOG << "Waiting thread ends" << ELOG;
+        B_INFO << "Waiting thread ends" << E_INFO;
 
         tPool.join();
 
-        BLOG << "++++++++++ End control ++++++++++\n" << ELOG;
+        B_INFO << "++++++++++ End control ++++++++++\n" << E_INFO;
     }
 
 }
