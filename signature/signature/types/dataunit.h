@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __DATAUNIT_H__
+#define __DATAUNIT_H__
 
 #include <memory>
 #include "../system/constructordefines.h"
@@ -42,3 +43,5 @@ namespace twPro {
 
     typedef DataUnit_alloc<> DataUnit;
 }
+
+#endif // __DATAUNIT_H__

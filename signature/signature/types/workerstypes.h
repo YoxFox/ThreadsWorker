@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __WORKERSTYPES_H__
+#define __WORKERSTYPES_H__
 
 namespace twPro
 {
@@ -9,3 +10,5 @@ namespace twPro
         MD5_byte
     };
 }
+
+#endif // __WORKERSTYPES_H__

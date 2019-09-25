@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __APPLICATIONPARAMETERS_H__
+#define __APPLICATIONPARAMETERS_H__
 
 #include <string>
 
@@ -17,3 +18,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __APPLICATIONPARAMETERS_H__

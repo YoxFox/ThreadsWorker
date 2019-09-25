@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __IINTERACTIVE_H__
+#define __IINTERACTIVE_H__
 
 #include <memory>
 #include <string>
@@ -37,3 +38,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __IINTERACTIVE_H__

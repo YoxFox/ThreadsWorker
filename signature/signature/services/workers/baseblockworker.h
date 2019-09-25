@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __BASEBLOCKWORKER_H__
+#define __BASEBLOCKWORKER_H__
 
 #include <atomic>
 
@@ -40,3 +41,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __BASEBLOCKWORKER_H__

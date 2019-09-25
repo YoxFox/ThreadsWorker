@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __IWORKER_H__
+#define __IWORKER_H__
 
 #include <atomic>
 #include "../types/databuffer.h"
@@ -29,3 +30,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __IWORKER_H__

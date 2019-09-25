@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __DATABUFFER_H__
+#define __DATABUFFER_H__
 
 #include <memory>
 #include <map>
@@ -65,3 +66,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __DATABUFFER_H__

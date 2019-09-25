@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SOURCETORESULTTAMPLATETASK_H__
+#define __SOURCETORESULTTAMPLATETASK_H__
 
 #include <string>
 #include <memory>
@@ -70,4 +71,6 @@ namespace twPro {
 
     };
 
-}
+} 
+
+#endif // __SOURCETORESULTTAMPLATETASK_H__

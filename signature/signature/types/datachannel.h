@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __DATACHANNEL_H__
+#define __DATACHANNEL_H__
 
 #include <memory>
 #include <queue>
@@ -134,3 +135,5 @@ private: \
     } \
     std::vector<std::shared_ptr<Notifier<T>>> m_notifiers_ ## name; \
 public:
+
+#endif // __DATACHANNEL_H__

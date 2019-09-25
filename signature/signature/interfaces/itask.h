@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ITASK_H__
+#define __ITASK_H__
 
 #include <atomic>
 
@@ -14,3 +15,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __ITASK_H__

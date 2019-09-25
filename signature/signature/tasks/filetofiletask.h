@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FILETOFILETASK_H__
+#define __FILETOFILETASK_H__
 
 #include "sourcetoresulttemplatetask.h"
 
@@ -36,3 +37,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __FILETOFILETASK_H__

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __THREADPOOL_H__
+#define __THREADPOOL_H__
 
 // This is some simple solution for thread pooling. 
 // In the future we have to improve this service.
@@ -30,3 +31,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __THREADPOOL_H__

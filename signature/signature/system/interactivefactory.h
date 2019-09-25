@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __INTERACTIVEFACTORY_H__
+#define __INTERACTIVEFACTORY_H__
 
 // This class is the factory for injection of the Interactive dependency
 // In the future, we have to develop more flexible solution for DI
@@ -40,3 +41,5 @@ namespace twPro {
 
 #define B_INFO { std::ostringstream s; s
 #define E_INFO ' '; interactive()->pushMessage(s.str()); }
+
+#endif // __INTERACTIVEFACTORY_H__

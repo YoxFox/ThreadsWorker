@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __PCQUEUE_H__
+#define __PCQUEUE_H__
 
 #include <queue>
 #include <memory>
@@ -43,3 +44,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __PCQUEUE_H__

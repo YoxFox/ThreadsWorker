@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __TASKMANAGER_H__
+#define __TASKMANAGER_H__
 
 #include <memory>
 
@@ -22,3 +23,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __TASKMANAGER_H__

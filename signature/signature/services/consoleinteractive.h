@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONSOLEINTERACTIVE_H__
+#define __CONSOLEINTERACTIVE_H__
 
 // Platformm dependency!
 // TODO: move it to the platform dependency section
@@ -65,3 +66,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __CONSOLEINTERACTIVE_H__

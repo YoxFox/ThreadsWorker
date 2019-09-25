@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FILEWRITERBYPARTS_H__
+#define __FILEWRITERBYPARTS_H__
 
 #include <memory>
 #include <fstream>
@@ -47,3 +48,4 @@ namespace twPro {
 
 }
 
+#endif // __FILEWRITERBYPARTS_H__

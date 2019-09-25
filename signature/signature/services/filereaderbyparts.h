@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FILEREADERBYPARTS_H__
+#define __FILEREADERBYPARTS_H__
 
 #include <memory>
 #include <fstream>
@@ -58,3 +59,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __FILEREADERBYPARTS_H__

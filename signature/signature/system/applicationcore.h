@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __APPLICATIONCORE_H__
+#define __APPLICATIONCORE_H__
 
 namespace twPro {
 
@@ -15,3 +16,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __APPLICATIONCORE_H__

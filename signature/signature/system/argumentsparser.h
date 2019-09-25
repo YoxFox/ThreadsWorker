@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ARGUMENTSPARSER_H__
+#define __ARGUMENTSPARSER_H__
 
 #include "applicationparameters.h"
 #include "constructordefines.h"
@@ -23,3 +24,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __ARGUMENTSPARSER_H__

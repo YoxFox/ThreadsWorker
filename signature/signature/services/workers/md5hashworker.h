@@ -1,8 +1,9 @@
-#pragma once
+#ifndef __MD5HASHWORKER_H__
+#define __MD5HASHWORKER_H__
 
 #include <atomic>
 
-#include "../system/constructordefines.h"
+#include "../../system/constructordefines.h"
 #include "../../types/databuffer.h"
 #include "baseblockworker.h"
 
@@ -26,3 +27,5 @@ namespace twPro {
     };
 
 }
+
+#endif // __MD5HASHWORKER_H__
