@@ -24,6 +24,9 @@ namespace twPro {
         else if (_params.source.empty() || _params.result.empty()) {
             throw std::runtime_error("File path can't be empty");
         }
+        else if (_params.source == _params.result) {
+            throw std::runtime_error("Input and output files can't have similar path");
+        }
     }
 
     void FileToFileTask::setupSources(std::shared_ptr<twPro::DataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::DataBuffer> _resultBufferPtr)
