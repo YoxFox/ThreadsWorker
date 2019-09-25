@@ -34,8 +34,11 @@ namespace twPro {
 
         // === SETUP RESOURCES  ===
 
-        m_sourceBufferPtr.reset(new twPro::DataBuffer(20, m_params.blockSize));
-        m_resultBufferPtr.reset(new twPro::DataBuffer(20, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
+        ThreadPool tPool;
+        size_t curAvailableThreads = tPool.countMaxAvailableThreads();
+
+        m_sourceBufferPtr.reset(new twPro::DataBuffer(2*curAvailableThreads, m_params.blockSize));
+        m_resultBufferPtr.reset(new twPro::DataBuffer(2*curAvailableThreads, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
 
         m_worker->setConsumerBuffer(m_sourceBufferPtr);
         m_worker->setProducerBuffer(m_resultBufferPtr);
@@ -131,12 +134,8 @@ namespace twPro {
 
         };
 
-        ThreadPool tPool;
-
         tPool.poolTask(fileReaderJob);
         tPool.poolTask(fileWriterJob);
-
-        size_t curAvailableThreads = tPool.countMaxAvailableThreads();
 
         if (curAvailableThreads <= 1) {
             tPool.poolTask(workerJob);
