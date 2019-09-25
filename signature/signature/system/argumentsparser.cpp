@@ -26,6 +26,9 @@ namespace twPro {
             boost::program_options::variables_map vm;
             store(parse_command_line(argc, argv, desc), vm);
 
+            // Default block size
+            params.blockSize = 1024 * 1024; // 1 MiB (1 mebi-bytes = 2^20 bytes)
+
             if (vm.count("help")) {
                 std::cout << desc << '\n';
             } 
