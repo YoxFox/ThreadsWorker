@@ -31,8 +31,13 @@ namespace twPro {
 
     FileReaderByParts::~FileReaderByParts() noexcept
     {
+        // Wait to release
+        std::lock_guard<std::mutex> lock(work_mutex);
+
         try {
-            m_stream.close();
+            if (m_stream) {
+                m_stream.close();
+            }
         }
         catch (std::ifstream::failure e) {
             // TODO: Create solution

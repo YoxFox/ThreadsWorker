@@ -4,6 +4,7 @@
 // In the future, we have to develop more flexible solution for DI
 
 #include <memory>
+#include <sstream>
 #include "../interfaces/iinteractive.h"
 
 namespace twPro {

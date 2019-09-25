@@ -1,6 +1,7 @@
 #include "taskmanager.h"
 
-#include "../tasks/filetofilebyblockstask.h"
+#include "../tasks/filetofiletask.h"
+
 #include "../services/workers/md5hashworker.h"
 
 namespace twPro {
@@ -27,11 +28,12 @@ namespace twPro {
 
     std::shared_ptr<twPro::ITask> TaskManager::createMD5Task(const ApplicationParameters & _params) const noexcept
     {
-        twPro::FileToFileByBlocksTask_params taskParams;
+
+        twPro::SourceToResultTemplateTask_params taskParams;
 
         taskParams.blockSize = _params.blockSize;
-        taskParams.sourceFilePath = _params.source;
-        taskParams.resultFilePath = _params.destination;
+        taskParams.source = _params.source;
+        taskParams.result = _params.destination;
 
         std::shared_ptr<twPro::IWorker> worker(nullptr);
 
@@ -42,10 +44,10 @@ namespace twPro {
         default: /* DO NOTHING */ break;
         }
 
-        std::shared_ptr<twPro::FileToFileByBlocksTask> task(nullptr);
+        std::shared_ptr<twPro::FileToFileTask> task(nullptr);
 
         if (worker) {
-            task.reset(new FileToFileByBlocksTask(taskParams));
+            task.reset(new FileToFileTask(taskParams));
             task->setWorker(worker);
         }
 

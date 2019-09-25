@@ -56,6 +56,7 @@ namespace twPro {
                 doBlockWork(task_unit, result_unit);
             }
             catch (const std::exception& ex) {
+
                 returnResources();
                 throw ex;
             }
