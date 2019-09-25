@@ -41,14 +41,6 @@ namespace twPro {
 
         twPro::ApplicationParameters params = twPro::ArgumentsParser::parseParameters(argc, argv);
 
-        /*
-        params.blockSize = 1024 * 1024;
-        params.source = "C:\\Users\\YoxFox\\Downloads\\alita_film.mkv";
-        //params.source = "C:\\Users\\YoxFox\\Downloads\\boost_1_71_0.7z";
-        params.destination = "C:\\Users\\YoxFox\\Downloads\\!result.sign";
-        params.workerType = twPro::WorkersTypes::MD5_hex;
-        */
-
         if (params.workerType == WorkersTypes::Unknown) {
             interactive->pushMessage("Incorrect (unknown) task", IInteractive::MessageType::ERROR_m);
             stopInteractive();
@@ -84,6 +76,7 @@ namespace twPro {
                 return;
             }
 
+            // TODO: May be it's not good to show it if the task is not fully completed by some internal errors
             interactive->pushMessage("The task is successfully done", IInteractive::MessageType::INFO_m);
         });
 
