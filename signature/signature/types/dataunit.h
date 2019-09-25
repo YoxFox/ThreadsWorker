@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "../system/constructordefines.h"
 
 namespace twPro {
 
@@ -18,7 +19,7 @@ namespace twPro {
         DataUnit_alloc(size_t _size, const Allocator &a = Allocator());
         ~DataUnit_alloc() noexcept;
 
-        DataUnit_alloc(const DataUnit_alloc &) = delete;
+        COPY_MOVE_FORBIDDEN(DataUnit_alloc)
 
     private:
         Allocator m_allocator;

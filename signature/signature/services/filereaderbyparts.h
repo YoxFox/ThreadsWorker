@@ -4,6 +4,7 @@
 #include <fstream>
 #include <atomic>
 
+#include "../system/constructordefines.h"
 #include "../types/databuffer.h"
 #include "../types/datachannel.h"
 
@@ -18,6 +19,8 @@ namespace twPro {
 
         FileReaderByParts(const std::string & _filePath);
         ~FileReaderByParts() noexcept;
+
+        COPY_FORBIDDEN(FileReaderByParts)
 
         // Output data buffer for producing
         void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;

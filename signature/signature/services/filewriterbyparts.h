@@ -5,6 +5,7 @@
 #include <atomic>
 #include <vector>
 
+#include "../system/constructordefines.h"
 #include "../types/databuffer.h"
 #include "../types/datachannel.h"
 
@@ -19,6 +20,8 @@ namespace twPro {
 
         FileWriterByParts(const std::string & _filePath);
         ~FileWriterByParts() noexcept;
+
+        COPY_FORBIDDEN(FileWriterByParts)
 
         // Output data buffer for producing
         void setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;

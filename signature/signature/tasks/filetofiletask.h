@@ -12,7 +12,9 @@ namespace twPro {
     public:
 
         FileToFileTask(const twPro::SourceToResultTemplateTask_params & _params) noexcept;
-        ~FileToFileTask() noexcept;
+        virtual ~FileToFileTask() noexcept;
+
+        COPY_FORBIDDEN(FileToFileTask)
 
         // Steps for template
         virtual void preCheck(const twPro::SourceToResultTemplateTask_params & _params);

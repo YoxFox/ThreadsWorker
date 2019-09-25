@@ -2,6 +2,7 @@
 
 #include <atomic>
 
+#include "../system/constructordefines.h"
 #include "../../types/databuffer.h"
 #include "baseblockworker.h"
 
@@ -12,6 +13,8 @@ namespace twPro {
     public:
         MD5HashWorker() noexcept;
         ~MD5HashWorker() noexcept override;
+
+        COPY_MOVE_FORBIDDEN(MD5HashWorker)
 
         size_t maxConsumingDataUnitSize() const noexcept override;
         size_t maxProducingDataUnitSizeByConsumingDataUnitSize(const size_t _consumingDataUnitSize) const noexcept;

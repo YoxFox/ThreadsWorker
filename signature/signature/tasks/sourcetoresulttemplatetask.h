@@ -22,7 +22,9 @@ namespace twPro {
     {
     public:
         SourceToResultTemplateTask(const twPro::SourceToResultTemplateTask_params & _params) noexcept;
-        ~SourceToResultTemplateTask() noexcept;
+        virtual ~SourceToResultTemplateTask() noexcept;
+
+        COPY_FORBIDDEN(SourceToResultTemplateTask)
 
         inline void setWorker(const std::shared_ptr<twPro::IWorker> & _worker) noexcept
         {

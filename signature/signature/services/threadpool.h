@@ -6,6 +6,8 @@
 #include <functional>
 #include <boost/asio/thread_pool.hpp>
 
+#include "../system/constructordefines.h"
+
 namespace twPro {
 
     class ThreadPool
@@ -14,6 +16,8 @@ namespace twPro {
 
         ThreadPool() noexcept;
         ~ThreadPool() noexcept;
+
+        COPY_FORBIDDEN(ThreadPool)
 
         size_t countMaxAvailableThreads() const noexcept;
         void poolTask(std::function<void()> _func) noexcept;

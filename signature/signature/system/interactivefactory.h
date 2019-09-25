@@ -6,12 +6,15 @@
 #include <memory>
 #include <sstream>
 #include "../interfaces/iinteractive.h"
+#include "constructordefines.h"
 
 namespace twPro {
 
     class InteractiveFactory final
     {
     public:
+
+        COPY_MOVE_FORBIDDEN(InteractiveFactory)
 
         static twPro::InteractiveFactory * instance() noexcept {
             static twPro::InteractiveFactory f;

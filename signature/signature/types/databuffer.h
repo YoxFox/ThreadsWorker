@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <stdexcept>
 
+#include "../system/constructordefines.h"
 #include "dataunit.h"
 #include "pcqueue.h"
 
@@ -16,6 +17,8 @@ namespace twPro {
 
         DataBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize);
         ~DataBuffer() noexcept;
+
+        COPY_FORBIDDEN(DataBuffer)
 
         // It blocks access to the data and frees all resources.
         // Attention! This function waits to clear resources.

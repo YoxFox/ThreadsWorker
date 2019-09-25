@@ -7,6 +7,8 @@
 #include <vector>
 #include <functional>
 
+#include "../system/constructordefines.h"
+
 namespace twPro {
 
     class INotifier {
@@ -26,6 +28,8 @@ namespace twPro {
     public:
 
         Notifier(const size_t _maxQueueItems = ULLONG_MAX) noexcept : m_maxQueueItems(_maxQueueItems) {}
+
+        COPY_MOVE_FORBIDDEN(Notifier)
 
         void notify(const T & _val) noexcept
         {
@@ -77,8 +81,10 @@ namespace twPro {
     class DataChannel final
     {
     public:
-        DataChannel() noexcept;
-        ~DataChannel() noexcept;
+        DataChannel() noexcept {}
+        ~DataChannel() noexcept {}
+
+        COPY_FORBIDDEN(DataChannel)
 
         // We can't use std::numeric_limits<size_t>::max() as default value because some system file defines "max" as macro
 

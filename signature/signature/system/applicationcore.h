@@ -2,7 +2,6 @@
 
 namespace twPro {
 
-    struct ApplicationParameters;
     class ApplicationCore final
     {
     public:

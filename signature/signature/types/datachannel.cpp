@@ -2,14 +2,6 @@
 
 namespace twPro {
 
-    DataChannel::DataChannel() noexcept
-    {
-    }
-
-    DataChannel::~DataChannel() noexcept
-    {
-    }
-
     void DataChannel::listen(std::atomic_bool & _stopListening, const long long _waitListeningCycleMS)
     {
         // We forbid to have more than one listener at the time

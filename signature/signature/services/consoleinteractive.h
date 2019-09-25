@@ -23,6 +23,8 @@ namespace twPro {
         ConsoleInteractive() noexcept;
         ~ConsoleInteractive() noexcept;
 
+        COPY_MOVE_FORBIDDEN(ConsoleInteractive)
+
         // Takes all thread time, it runs interactive loop
         void run(std::atomic_bool & _stopFlag);
 
@@ -33,6 +35,8 @@ namespace twPro {
 
         struct ColorChanger
         {
+            COPY_MOVE_FORBIDDEN(ColorChanger)
+
             // It returns standart (white) color after destruction
             ColorChanger(const int _color = FOREGROUND_WHITE) { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _color); }
             ~ColorChanger() { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_WHITE); }
@@ -45,6 +49,7 @@ namespace twPro {
         struct NotifyMessage {
             std::string text;
             twPro::IInteractive::MessageType type;
+
             NotifyMessage() : text(), type(twPro::IInteractive::MessageType::INFO_m) {}
             NotifyMessage(const std::string & _message, const twPro::IInteractive::MessageType & _type) : 
                 text(_message), type(_type) {}
