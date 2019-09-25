@@ -174,7 +174,7 @@ namespace twPro {
         }
         else {
             // 100%
-            progress->notify(IInteractive::Progress("Signing", 100, 100));
+            progress->notify(IInteractive::Progress("Progress", 100, 100));
         }
 
         stopFlag = true;

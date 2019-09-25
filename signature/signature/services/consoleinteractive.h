@@ -42,7 +42,17 @@ namespace twPro {
         void moveProgressBarDown() noexcept;
         SHORT consoleWidth() const;
 
+        struct NotifyMessage {
+            std::string text;
+            twPro::IInteractive::MessageType type;
+            NotifyMessage() : text(), type(twPro::IInteractive::MessageType::INFO_m) {}
+            NotifyMessage(const std::string & _message, const twPro::IInteractive::MessageType & _type) : 
+                text(_message), type(_type) {}
+        };
+
         twPro::DataChannel m_dataChannel;
+        std::shared_ptr<twPro::Notifier<twPro::ConsoleInteractive::NotifyMessage>> m_messageNotifier;
+
         std::mutex m_consoleMutex;
 
         twPro::IInteractive::Progress m_currentProgress;

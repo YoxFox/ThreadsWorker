@@ -30,7 +30,7 @@ namespace twPro {
         // So, we use simpler way to display the progress
 
         size_t percent_progress = (_progress.current * 100) / _progress.total;
-        printf(" %s [%3d%%]\r", _progress.title, percent_progress);
+        printf(" %s [%3llu%%]\r", _progress.title.data(), percent_progress);
 
         return;
 
@@ -43,16 +43,16 @@ namespace twPro {
         }
 
         //minus label len
-        int scaleWidth = progressBarWidth - _progress.title.length();
+        size_t scaleWidth = progressBarWidth - _progress.title.length();
         size_t scalePosition = (_progress.current * scaleWidth) / _progress.total;
 
         size_t percent = (_progress.current * 100) / _progress.total;
 
-        /* Title */             printf(" %s [", _progress.title);
+        /* Title */             printf(" %s [", _progress.title.data());
         /* Scale filling */     for (size_t i = 0; i < scalePosition; i++)  printf("%c", '=');
-        /* Space filling */     printf("% *c", scaleWidth - scalePosition + 1, ']');
+        /* Space filling */     printf("% *c", scaleWidth - scalePosition + (size_t)(1), ']');
         
-        printf(" %3d%%\r", percent);
+        printf(" %3llu%%\r", percent);
     }
 
     void ConsoleInteractive::moveProgressBarDown() noexcept
@@ -82,6 +82,29 @@ namespace twPro {
     {
         ShowConsoleCursor(false);
         ColorChanger ch; (void)ch; /* UNUSED */
+
+        m_messageNotifier = m_dataChannel.createNotifier<NotifyMessage>();
+        m_messageNotifier->setCallBack([this](const NotifyMessage & _message) {
+            std::lock_guard<std::mutex> lock(m_consoleMutex);
+            ShowConsoleCursor(false);
+
+            if (m_currentProgress) {
+                moveProgressBarDown();
+            }
+
+            std::shared_ptr<ColorChanger> ch;
+            switch (_message.type)
+            {
+            case MessageType::INFO_m: ch.reset(new ColorChanger(FOREGROUND_WHITE)); break;
+            case MessageType::WARNING_m: ch.reset(new ColorChanger(FOREGROUND_YELLOW)); break;
+            case MessageType::ERROR_m: ch.reset(new ColorChanger(FOREGROUND_RED)); break;
+            default: break;
+            }
+
+            std::cout << _message.text << '\n';
+        });
+
+        pushMessage(""); // Just separate us from other console messages
     }
 
     ConsoleInteractive::~ConsoleInteractive() noexcept
@@ -99,6 +122,7 @@ namespace twPro {
         auto notifier = m_dataChannel.createNotifier<twPro::IInteractive::Progress>(1);
 
         notifier->setCallBack([this](const twPro::IInteractive::Progress & _progress) {
+            // NOW we use only one progress bar, we can improve it!
             std::lock_guard<std::mutex> lock(m_consoleMutex);
             m_currentProgress = _progress;
             showProgress(_progress);
@@ -109,23 +133,7 @@ namespace twPro {
 
     void ConsoleInteractive::pushMessage(const std::string _message, const MessageType & _type) noexcept
     {
-        std::lock_guard<std::mutex> lock(m_consoleMutex);
-        ShowConsoleCursor(false);
-
-        if (m_currentProgress) {
-            moveProgressBarDown();
-        }
-
-        std::shared_ptr<ColorChanger> ch;
-        switch (_type)
-        {
-        case MessageType::INFO_m: ch.reset(new ColorChanger(FOREGROUND_WHITE)); break;
-        case MessageType::WARNING_m: ch.reset(new ColorChanger(FOREGROUND_YELLOW)); break;
-        case MessageType::ERROR_m: ch.reset(new ColorChanger(FOREGROUND_RED)); break;
-        default: break;
-        }
-
-        std::cout << _message << '\n';
+        m_messageNotifier->notify(NotifyMessage(_message, _type));
     }
 
 }

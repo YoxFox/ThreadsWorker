@@ -25,7 +25,7 @@ namespace twPro {
     {
     public:
 
-        Notifier(const size_t _maxQueueItems) noexcept : m_maxQueueItems(_maxQueueItems) {}
+        Notifier(const size_t _maxQueueItems = ULLONG_MAX) noexcept : m_maxQueueItems(_maxQueueItems) {}
 
         void notify(const T & _val) noexcept
         {
