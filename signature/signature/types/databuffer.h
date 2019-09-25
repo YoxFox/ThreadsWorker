@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <stack>
+#include <map>
 #include <condition_variable>
 #include <stdexcept>
 
@@ -40,7 +40,20 @@ namespace twPro {
         size_t m_bufferUnitSize;
 
         twPro::PCQueue m_pcQueue;
-        std::stack<std::shared_ptr<twPro::DataUnit>> m_availableUnits;
+
+        // Control MAP
+
+        struct DataUnitInfo
+        {
+            bool inBuffer;
+
+            DataUnitInfo() : inBuffer(false) {}
+            DataUnitInfo(const bool _inBuffer) : inBuffer(_inBuffer) {}
+        };
+
+        std::map<std::shared_ptr<twPro::DataUnit>, twPro::DataBuffer::DataUnitInfo> m_availableUnits;
+
+        // ----
 
         std::condition_variable m_cv;
         std::condition_variable m_clear_cv;

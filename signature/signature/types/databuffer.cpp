@@ -33,7 +33,7 @@ namespace twPro {
 
             std::shared_ptr<DataUnit> sUnitPtr(unit);
             m_pcQueue.pPush(sUnitPtr);
-            m_availableUnits.push(sUnitPtr);
+            m_availableUnits.insert({ sUnitPtr, DataUnitInfo(true) });
             ++m_bufferCapacity;
         }
     }
@@ -61,10 +61,7 @@ namespace twPro {
             return m_pcQueue.size() == m_bufferCapacity;
         });
 
-        while (!m_availableUnits.empty()) {
-            m_availableUnits.pop();
-        }
-
+        m_availableUnits.clear();
         m_cv.notify_all();
     }
 
@@ -90,7 +87,11 @@ namespace twPro {
         }
 
         // Take the element from the producer queue
-        return m_pcQueue.pPop();
+
+        std::weak_ptr<DataUnit> unit = m_pcQueue.pPop();
+        m_availableUnits.at(unit.lock()).inBuffer = false;
+
+        return unit;
     }
 
     std::weak_ptr<DataUnit> DataBuffer::consumer_popWait(const long long _waitMilliseconds) noexcept
@@ -115,18 +116,26 @@ namespace twPro {
         }
 
         // Take the element from the consumer queue
-        return m_pcQueue.cPop();
+
+        std::weak_ptr<DataUnit> unit = m_pcQueue.cPop();
+        m_availableUnits.at(unit.lock()).inBuffer = false;
+
+        return unit;
     }
 
     void DataBuffer::producer_push(const std::weak_ptr<DataUnit>& _unitPtr) noexcept
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
-        // TODO: check if exsists element in the queue
+        auto it = m_availableUnits.find(_unitPtr.lock());
+        if (it == m_availableUnits.end() || it->second.inBuffer) {
+            return;
+        }
 
         // Push the element to the consumer queue (avaliable for consumers)
         m_pcQueue.cPush(_unitPtr);
 
+        it->second.inBuffer = true;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }
@@ -135,11 +144,15 @@ namespace twPro {
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
-        // TODO: check if exsists element in the queue
+        auto it = m_availableUnits.find(_unitPtr.lock());
+        if (it == m_availableUnits.end() || it->second.inBuffer) {
+            return;
+        }
 
         // Push the element to the producer queue (avaliable for producers)
         m_pcQueue.pPush(_unitPtr);
 
+        it->second.inBuffer = true;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }
@@ -148,11 +161,15 @@ namespace twPro {
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
-        // TODO: check if exsists element in the queue
+        auto it = m_availableUnits.find(_unitPtr.lock());
+        if (it == m_availableUnits.end() || it->second.inBuffer) {
+            return;
+        }
 
         // Push the element to the producer queue (avaliable for producers)
         m_pcQueue.pPush(_unitPtr);
 
+        it->second.inBuffer = true;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }
@@ -161,11 +178,15 @@ namespace twPro {
     {
         std::lock_guard<std::mutex> lock(m_pc_mutex);
 
-        // TODO: check if exsists element in the queue
+        auto it = m_availableUnits.find(_unitPtr.lock());
+        if (it == m_availableUnits.end() || it->second.inBuffer) {
+            return;
+        }
 
         // Push the element to the consumer queue (avaliable for consumers)
         m_pcQueue.cPush(_unitPtr);
 
+        it->second.inBuffer = true;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }

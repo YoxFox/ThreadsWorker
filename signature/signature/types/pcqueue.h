@@ -35,9 +35,6 @@ namespace twPro {
         bool producerEmpty() const noexcept;
         bool consumerEmpty() const noexcept;
 
-        // 
-        bool exists(const std::queue<std::weak_ptr<DataUnit>> & _item) const noexcept;
-
     private:
 
         std::queue<std::weak_ptr<twPro::DataUnit>> m_producerQueue;

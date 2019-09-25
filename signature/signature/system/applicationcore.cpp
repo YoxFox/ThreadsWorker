@@ -31,7 +31,7 @@ namespace twPro {
 
         auto stopInteractive = [&stopInteractiveAtom, &interactiveThread]() {
             // Just sleep for interactive if it has some view events
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
             stopInteractiveAtom = true;
             interactiveThread.join();
@@ -84,7 +84,7 @@ namespace twPro {
                 return;
             }
 
-            interactive->pushMessage("The task successfully done", IInteractive::MessageType::INFO_m);
+            interactive->pushMessage("The task is successfully done", IInteractive::MessageType::INFO_m);
         });
 
         ct.join();
