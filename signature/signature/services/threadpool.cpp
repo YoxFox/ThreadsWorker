@@ -21,12 +21,20 @@ namespace twPro {
 
     void ThreadPool::poolTask(std::function<void()> _func) noexcept
     {
-        boost::asio::post(m_pool, _func);
+        //boost::asio::post(m_pool, _func);
+
+        std::shared_ptr<std::thread> th(new std::thread(_func));
+        m_theradSTDPool.push_back(th);
     }
 
     void ThreadPool::join() noexcept
     {
-        return m_pool.join();
+        for (auto th : m_theradSTDPool) {
+            th->join();
+            th.reset();
+        }
+
+        //return m_pool.join();
     }
 
 }

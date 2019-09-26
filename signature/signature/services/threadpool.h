@@ -6,6 +6,8 @@
 
 #include <functional>
 #include <boost/asio/thread_pool.hpp>
+#include <vector>
+#include <memory>
 
 #include "../system/constructordefines.h"
 
@@ -27,6 +29,9 @@ namespace twPro {
     private:
 
         boost::asio::thread_pool m_pool;
+
+        // I have some problems with boost threads on other PC, so, this is temporary solution.
+        std::vector<std::shared_ptr<std::thread>> m_theradSTDPool;
 
     };
 
