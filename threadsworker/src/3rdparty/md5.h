@@ -65,6 +65,7 @@ namespace bzflag {
         MD5& finalize();
         std::string hexdigest() const;
         void hexdigest(char * output) const;
+        void bytedigest(char * output) const;
         friend std::ostream& operator<<(std::ostream&, MD5 md5);
 
     private:

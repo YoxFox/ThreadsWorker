@@ -374,6 +374,16 @@ namespace bzflag {
         }
     }
 
+    void MD5::bytedigest(char * output) const
+    {
+        if (!finalized)
+            return;
+
+        for (char i = 0; i < 16; i++) {
+            output[i] = digest[i];
+        }
+    }
+
     //////////////////////////////
 
     std::ostream& operator<<(std::ostream& out, MD5 md5)

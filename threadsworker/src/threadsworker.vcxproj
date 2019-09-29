@@ -163,6 +163,7 @@
     <ClInclude Include="interfaces\iinteractive.h" />
     <ClInclude Include="interfaces\itask.h" />
     <ClInclude Include="services\consoleinteractive.h" />
+    <ClInclude Include="services\workers\md5bytehashworker.h" />
     <ClInclude Include="system\argumentsparser.h" />
     <ClInclude Include="services\threadpool.h" />
     <ClInclude Include="system\applicationcore.h" />
@@ -186,6 +187,7 @@
   <ItemGroup>
     <ClCompile Include="3rdparty\md5.cpp" />
     <ClCompile Include="services\consoleinteractive.cpp" />
+    <ClCompile Include="services\workers\md5bytehashworker.cpp" />
     <ClCompile Include="system\argumentsparser.cpp" />
     <ClCompile Include="services\threadpool.cpp" />
     <ClCompile Include="system\applicationcore.cpp" />
