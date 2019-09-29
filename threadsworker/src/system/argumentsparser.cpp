@@ -19,8 +19,8 @@ namespace twPro {
                 ("destination,d", boost::program_options::value<std::string>(), "Some data storage of results (file path, ip)")
                 ("algorithm,a", boost::program_options::value<std::string>(), "Type of an algorithm for working on data")
                 ("algorithms", "Available algorithms:\n"
-                               "md5_hex - Hex (32 bits) output type md5\n"
-                               "md5_byte - 2 bytes (16 bits) output type md5 (IN DEVELOPMENT)")
+                               "    md5_hex - Hex (32 bytes) md5 output type\n"
+                               "    md5_byte - Original 128 bits (16 bytes) md5 output type")
                 ("block,b", boost::program_options::value<size_t>(), "Data block size for an algorithm");
              
             boost::program_options::variables_map vm;

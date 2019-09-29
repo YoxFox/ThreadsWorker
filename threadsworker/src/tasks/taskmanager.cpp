@@ -3,6 +3,7 @@
 #include "../tasks/filetofiletask.h"
 
 #include "../services/workers/md5hashworker.h"
+#include "../services/workers/md5bytehashworker.h"
 
 namespace twPro {
 
@@ -40,7 +41,7 @@ namespace twPro {
         switch (_params.workerType)
         {
         case WorkersTypes::MD5_hex: worker.reset(new MD5HashWorker()); break;
-        case WorkersTypes::MD5_byte: /* DO NOTHING | TODO */; break;
+        case WorkersTypes::MD5_byte: worker.reset(new MD5ByteHashWorker()); break;
         default: /* DO NOTHING */ break;
         }
 
