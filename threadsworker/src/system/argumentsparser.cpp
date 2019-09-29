@@ -31,7 +31,7 @@ namespace twPro {
             params.workerType = WorkersTypes::MD5_hex;
 
             if (vm.count("help")) {
-                std::cout << desc << '\n';
+                std::cout << "\n" << desc << '\n';
             } 
             if (vm.count("source")) {
                 params.source = vm["source"].as<std::string>();
