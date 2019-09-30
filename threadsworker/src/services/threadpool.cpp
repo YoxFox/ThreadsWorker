@@ -34,6 +34,8 @@ namespace twPro {
             th.reset();
         }
 
+        m_theradSTDPool.clear();
+
         //return m_pool.join();
     }
 
