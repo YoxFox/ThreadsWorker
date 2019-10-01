@@ -178,10 +178,9 @@
     <ClInclude Include="tasks\filetofiletask.h" />
     <ClInclude Include="tasks\sourcetoresulttemplatetask.h" />
     <ClInclude Include="tasks\taskmanager.h" />
-    <ClInclude Include="types\databuffer.h" />
+    <ClInclude Include="types\lrdatabuffer.h" />
     <ClInclude Include="types\datachannel.h" />
     <ClInclude Include="types\dataunit.h" />
-    <ClInclude Include="types\pcqueue.h" />
     <ClInclude Include="types\workerstypes.h" />
   </ItemGroup>
   <ItemGroup>
@@ -200,9 +199,8 @@
     <ClCompile Include="tasks\filetofiletask.cpp" />
     <ClCompile Include="tasks\sourcetoresulttemplatetask.cpp" />
     <ClCompile Include="tasks\taskmanager.cpp" />
-    <ClCompile Include="types\databuffer.cpp" />
+    <ClCompile Include="types\lrdatabuffer.cpp" />
     <ClCompile Include="types\datachannel.cpp" />
-    <ClCompile Include="types\pcqueue.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

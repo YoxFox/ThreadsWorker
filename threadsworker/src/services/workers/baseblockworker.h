@@ -3,7 +3,7 @@
 
 #include <atomic>
 
-#include "../../types/databuffer.h"
+#include "../../types/lrdatabuffer.h"
 #include "../../interfaces/iworker.h"
 
 namespace twPro {
@@ -22,10 +22,10 @@ namespace twPro {
         void work(std::atomic_bool & _stopFlag) override;
 
         // Input data buffer for consuming
-        void setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer> & _cBuffer) noexcept;
+        void setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _cBuffer) noexcept;
 
         // Output data buffer for producing
-        void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _pBuffer) noexcept;
+        void setProducerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _pBuffer) noexcept;
 
     protected:
 
@@ -35,8 +35,8 @@ namespace twPro {
 
         std::atomic_bool m_isStopped;
 
-        std::shared_ptr<DataBuffer> m_dataSource;
-        std::shared_ptr<DataBuffer> m_resultStorage;
+        std::shared_ptr<twPro::LRDataBuffer> m_dataSource;
+        std::shared_ptr<twPro::LRDataBuffer> m_resultStorage;
 
     };
 

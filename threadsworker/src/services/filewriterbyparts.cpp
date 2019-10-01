@@ -37,7 +37,7 @@ namespace twPro {
         }
     }
 
-    void FileWriterByParts::setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
+    void FileWriterByParts::setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer>& _buffer) noexcept
     {
         std::lock_guard<std::mutex> lock(work_mutex);
         m_buffer = _buffer;
@@ -53,7 +53,7 @@ namespace twPro {
 
         while (!_stopFlag.load()) {
 
-            std::shared_ptr<twPro::DataUnit> unit = m_buffer->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
+            std::shared_ptr<twPro::DataUnit> unit = m_buffer->right_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!unit) {
                 continue;
@@ -68,13 +68,13 @@ namespace twPro {
                 m_stream.write(reinterpret_cast<char*>(unit->ptr), unit->dataSize);
             }
             catch (std::ofstream::failure e) {
-                m_buffer->consumer_pushNotUsed(unit);
+                m_buffer->right_push(unit);
                 throw e;
             }
 
             ++m_consumedDataBlocks;
             m_consumedDataLength += unit->dataSize;
-            m_buffer->consumer_push(unit);
+            m_buffer->left_push(unit);
             currentConsumedDataUnits_notify(m_consumedDataBlocks);
         }
     }

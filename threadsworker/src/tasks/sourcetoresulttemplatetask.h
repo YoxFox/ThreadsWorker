@@ -7,7 +7,7 @@
 
 #include "../interfaces/itask.h"
 #include "../interfaces/iworker.h"
-#include "../types/databuffer.h"
+#include "../types/lrdatabuffer.h"
 #include "../types/datachannel.h"
 
 namespace twPro {
@@ -51,7 +51,7 @@ namespace twPro {
 
         // Steps for template
         virtual void preCheck(const twPro::SourceToResultTemplateTask_params & _params) = 0;
-        virtual void setupSources(std::shared_ptr<twPro::DataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::DataBuffer> _resultBufferPtr) = 0;
+        virtual void setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr) = 0;
         virtual std::function<void()> prepareSourceJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
         virtual std::function<void()> prepareResultJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
         virtual std::function<void()> prepareWorkerJob(std::shared_ptr<twPro::IWorker> _worker, std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
@@ -66,8 +66,8 @@ namespace twPro {
         std::shared_ptr<twPro::IWorker> m_worker;
         std::mutex m_mutex;
 
-        std::shared_ptr<twPro::DataBuffer> m_sourceBufferPtr;
-        std::shared_ptr<twPro::DataBuffer> m_resultBufferPtr;
+        std::shared_ptr<twPro::LRDataBuffer> m_sourceBufferPtr;
+        std::shared_ptr<twPro::LRDataBuffer> m_resultBufferPtr;
 
     };
 

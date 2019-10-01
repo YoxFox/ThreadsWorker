@@ -24,21 +24,21 @@ namespace twPro {
 
         while (!_stopFlag.load()) {
 
-            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->producer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
+            std::shared_ptr<twPro::DataUnit> result_unit = m_resultStorage->left_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!result_unit) {
                 continue;
             }
 
-            std::shared_ptr<twPro::DataUnit> task_unit = m_dataSource->consumer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
+            std::shared_ptr<twPro::DataUnit> task_unit = m_dataSource->right_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!task_unit) {
-                m_resultStorage->producer_pushNotUsed(result_unit);
+                m_resultStorage->left_push(result_unit);
                 continue;
             }
 
             if (task_unit->dataSize > maxConsumingDataUnitSize()) {
-                m_resultStorage->producer_pushNotUsed(result_unit);
+                m_resultStorage->left_push(result_unit);
                 throw std::runtime_error("Internal error: incorrect buffer size for source data");
             }
 
@@ -48,8 +48,8 @@ namespace twPro {
             }
 
             auto returnResources = [this, &result_unit, &task_unit]() {
-                m_resultStorage->producer_pushNotUsed(result_unit);
-                m_dataSource->consumer_pushNotUsed(task_unit);
+                m_resultStorage->left_push(result_unit);
+                m_dataSource->right_push(task_unit);
             };
 
             try {
@@ -72,17 +72,17 @@ namespace twPro {
             result_unit->id = task_unit->id;
             result_unit->dataSize = maxProducingDataUnitSize;
 
-            m_dataSource->consumer_push(task_unit);
-            m_resultStorage->producer_push(result_unit);
+            m_dataSource->left_push(task_unit);
+            m_resultStorage->right_push(result_unit);
         }
     }
 
-    void BaseBlockWorker::setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer>& _cBuffer) noexcept
+    void BaseBlockWorker::setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer>& _cBuffer) noexcept
     {
         m_dataSource = _cBuffer;
     }
 
-    void BaseBlockWorker::setProducerBuffer(const std::shared_ptr<twPro::DataBuffer>& _pBuffer) noexcept
+    void BaseBlockWorker::setProducerBuffer(const std::shared_ptr<twPro::LRDataBuffer>& _pBuffer) noexcept
     {
         m_resultStorage = _pBuffer;
     }

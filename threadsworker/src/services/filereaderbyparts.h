@@ -6,7 +6,7 @@
 #include <atomic>
 
 #include "../system/constructordefines.h"
-#include "../types/databuffer.h"
+#include "../types/lrdatabuffer.h"
 #include "../types/datachannel.h"
 
 // IMPORTANT: This class is single thread worker.
@@ -24,7 +24,7 @@ namespace twPro {
         COPY_FORBIDDEN(FileReaderByParts)
 
         // Output data buffer for producing
-        void setProducerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;
+        void setProducerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _buffer) noexcept;
 
         // It takes all thread time. 
         // It can be multithreadable, it can be called by different trhreads many times.
@@ -53,7 +53,7 @@ namespace twPro {
 
         std::mutex work_mutex;
 
-        std::shared_ptr<twPro::DataBuffer> m_buffer;
+        std::shared_ptr<twPro::LRDataBuffer> m_buffer;
         std::ifstream m_stream;
 
     };

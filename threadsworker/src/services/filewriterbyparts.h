@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../system/constructordefines.h"
-#include "../types/databuffer.h"
+#include "../types/lrdatabuffer.h"
 #include "../types/datachannel.h"
 
 // IMPORTANT: This class is single thread worker.
@@ -25,7 +25,7 @@ namespace twPro {
         COPY_FORBIDDEN(FileWriterByParts)
 
         // Output data buffer for producing
-        void setConsumerBuffer(const std::shared_ptr<twPro::DataBuffer> & _buffer) noexcept;
+        void setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _buffer) noexcept;
 
         // Working with producing some data. It takes all thread time.
         void work(std::atomic_bool & _stopFlag);
@@ -41,7 +41,7 @@ namespace twPro {
 
         std::atomic<size_t> m_consumedDataBlocks;
         std::atomic<size_t> m_consumedDataLength;
-        std::shared_ptr<twPro::DataBuffer> m_buffer;
+        std::shared_ptr<twPro::LRDataBuffer> m_buffer;
         std::ofstream m_stream;
 
     };

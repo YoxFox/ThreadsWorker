@@ -29,7 +29,7 @@ namespace twPro {
         }
     }
 
-    void FileToFileTask::setupSources(std::shared_ptr<twPro::DataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::DataBuffer> _resultBufferPtr)
+    void FileToFileTask::setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr)
     {
         // === SETUP RESOURCES  ===
 

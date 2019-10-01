@@ -45,7 +45,7 @@ namespace twPro {
         }
     }
 
-    void FileReaderByParts::setProducerBuffer(const std::shared_ptr<twPro::DataBuffer>& _buffer) noexcept
+    void FileReaderByParts::setProducerBuffer(const std::shared_ptr<twPro::LRDataBuffer>& _buffer) noexcept
     {
         std::lock_guard<std::mutex> lock(work_mutex);
         m_buffer = _buffer;
@@ -65,7 +65,7 @@ namespace twPro {
 
         while (!_stopFlag.load()) {
 
-            std::shared_ptr<twPro::DataUnit> unit = m_buffer->producer_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
+            std::shared_ptr<twPro::DataUnit> unit = m_buffer->left_popWait(UNIT_WAIT_TIMEOUT_MS).lock();
 
             if (!unit) {
                 continue;
@@ -74,7 +74,7 @@ namespace twPro {
             size_t offset = m_idPart * unit->size;
 
             if (offset >= m_fileLength) {
-                m_buffer->producer_pushNotUsed(unit);
+                m_buffer->left_push(unit);
                 break;
             }
 
@@ -90,14 +90,14 @@ namespace twPro {
                 m_stream.read(reinterpret_cast<char*>(unit->ptr), blockLength);
             }
             catch (std::ifstream::failure e) {
-                m_buffer->producer_pushNotUsed(unit);
+                m_buffer->left_push(unit);
                 throw e;
             }
 
             unit->id = m_idPart;
             unit->dataSize = blockLength;
 
-            m_buffer->producer_push(unit);
+            m_buffer->right_push(unit);
 
             ++m_idPart;
             m_producedDataLength += blockLength;

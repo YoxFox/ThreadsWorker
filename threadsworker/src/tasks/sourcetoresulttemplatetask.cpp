@@ -26,8 +26,8 @@ namespace twPro {
         ThreadPool tPool;
         size_t curAvailableThreads = tPool.countMaxAvailableThreads();
 
-        m_sourceBufferPtr.reset(new twPro::DataBuffer(2 * curAvailableThreads, m_params.blockSize));
-        m_resultBufferPtr.reset(new twPro::DataBuffer(2 * curAvailableThreads, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
+        m_sourceBufferPtr.reset(new twPro::LRDataBuffer(2 * curAvailableThreads, m_params.blockSize));
+        m_resultBufferPtr.reset(new twPro::LRDataBuffer(2 * curAvailableThreads, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
 
         setupSources(m_sourceBufferPtr, m_resultBufferPtr);
 
