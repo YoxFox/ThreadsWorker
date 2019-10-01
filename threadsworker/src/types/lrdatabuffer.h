@@ -12,8 +12,8 @@
 
 /*
     Thread-safe Left-Right data buffer.
-    This buffer has 2 queue (Left and Right) for all units of the buffer.
-    Every unit can be only in one of two queues or outside of the buffer.
+    This buffer has 2 sets (Left and Right) for all units of the buffer.
+    Every unit can be only in one of two sets or outside of the buffer.
 */
 
 namespace twPro {
@@ -56,15 +56,6 @@ namespace twPro {
             return unit;
         }
 
-        // After clear() it is FALSE
-        bool m_isAvailable;
-
-        size_t m_bufferCapacity;
-        size_t m_bufferUnitSize;
-
-        std::queue<std::weak_ptr<twPro::DataUnit>> m_leftQueue;
-        std::queue<std::weak_ptr<twPro::DataUnit>> m_rightQueue;
-
         // Control MAP
 
         struct DataUnitInfo
@@ -78,6 +69,14 @@ namespace twPro {
         std::map<std::shared_ptr<twPro::DataUnit>, twPro::LRDataBuffer::DataUnitInfo> m_availableUnits;
 
         // ----
+
+        // After clear() it is FALSE
+        bool m_isAvailable;
+
+        size_t m_bufferCapacity;
+
+        std::queue<std::weak_ptr<twPro::DataUnit>> m_leftQueue;
+        std::queue<std::weak_ptr<twPro::DataUnit>> m_rightQueue;
 
         std::condition_variable m_cv;
         std::condition_variable m_clear_cv;

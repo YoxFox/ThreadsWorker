@@ -13,7 +13,7 @@ namespace twPro {
 
     LRDataBuffer::LRDataBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize) :
         m_isAvailable(true),
-        m_bufferCapacity(0), m_bufferUnitSize(_bufferUnitSize)
+        m_bufferCapacity(0)
     {
         for (auto idx = 1; idx <= _bufferCapacity; ++idx) {
             
