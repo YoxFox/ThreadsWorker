@@ -2,18 +2,10 @@
 
 namespace twPro {
 
-    static const bool IN_BUFFER = true;
-
-    template <class T>
-    std::weak_ptr<T> expiredWeakPtr()
-    {
-        std::shared_ptr<T> sPtr(nullptr);
-        return sPtr;
-    }
-
     LRDataBuffer::LRDataBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize) :
+        m_leftCounter(0), m_rightCounter(0),
         m_isAvailable(true),
-        m_bufferCapacity(0), m_bufferUnitSize(_bufferUnitSize)
+        m_bufferCapacity(0)
     {
         for (auto idx = 1; idx <= _bufferCapacity; ++idx) {
             
@@ -33,9 +25,9 @@ namespace twPro {
             }
 
             std::shared_ptr<DataUnit> unitPtr(unit);
-            m_leftQueue.push(unitPtr);
-            m_availableUnits.insert({ unitPtr, DataUnitInfo(IN_BUFFER) });
+            m_availableUnits.insert({ unitPtr, DataUnitInfo(DataUnitInfo::UnitLocation::Left) });
             ++m_bufferCapacity;
+            ++m_leftCounter;
         }
     }
 
@@ -59,7 +51,7 @@ namespace twPro {
         std::unique_lock<std::mutex> lk(m_LR_mutex);
 
         m_clear_cv.wait(lk, [this] {
-            return size() == m_bufferCapacity;
+            return internalUnitsNumber() == m_bufferCapacity;
         });
 
         m_availableUnits.clear();
@@ -78,15 +70,16 @@ namespace twPro {
         std::unique_lock<std::mutex> lk(m_LR_mutex);
 
         m_cv.wait_for(lk, std::chrono::milliseconds(_waitMilliseconds), [this] {
-            return !m_isAvailable || !m_leftQueue.empty();
+            return !m_isAvailable || !isLeftEmpty();
         });
 
-        if (!m_isAvailable || m_leftQueue.empty()) {
+        if (!m_isAvailable || isLeftEmpty()) {
             return expiredWeakPtr<DataUnit>();
         }
 
         std::weak_ptr<DataUnit> unit = leftPop();
-        m_availableUnits.at(unit.lock()).inBuffer = false;
+        m_availableUnits.at(unit.lock()).loc = DataUnitInfo::UnitLocation::Outside;
+        --m_leftCounter;
 
         return unit;
     }
@@ -103,15 +96,16 @@ namespace twPro {
         std::unique_lock<std::mutex> lk(m_LR_mutex);
 
         m_cv.wait_for(lk, std::chrono::milliseconds(_waitMilliseconds), [this] {
-            return !m_isAvailable || !m_rightQueue.empty();
+            return !m_isAvailable || !isRightEmpty();
         });
 
-        if (!m_isAvailable || m_rightQueue.empty()) {
+        if (!m_isAvailable || isRightEmpty()) {
             return expiredWeakPtr<DataUnit>();
         }
 
         std::weak_ptr<DataUnit> unit = rightPop();
-        m_availableUnits.at(unit.lock()).inBuffer = false;
+        m_availableUnits.at(unit.lock()).loc = DataUnitInfo::UnitLocation::Outside;
+        --m_rightCounter;
 
         return unit;
     }
@@ -121,13 +115,13 @@ namespace twPro {
         std::lock_guard<std::mutex> lock(m_LR_mutex);
 
         auto it = m_availableUnits.find(_unitPtr.lock());
-        if (it == m_availableUnits.end() || it->second.inBuffer) {
+        if (it == m_availableUnits.end() || it->second.loc != DataUnitInfo::UnitLocation::Outside) {
             return;
         }
 
-        m_leftQueue.push(_unitPtr);
+        it->second.loc = DataUnitInfo::UnitLocation::Left;
 
-        it->second.inBuffer = true;
+        ++m_leftCounter;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }
@@ -137,13 +131,13 @@ namespace twPro {
         std::lock_guard<std::mutex> lock(m_LR_mutex);
 
         auto it = m_availableUnits.find(_unitPtr.lock());
-        if (it == m_availableUnits.end() || it->second.inBuffer) {
+        if (it == m_availableUnits.end() || it->second.loc != DataUnitInfo::UnitLocation::Outside) {
             return;
         }
 
-        m_rightQueue.push(_unitPtr);
+        it->second.loc = DataUnitInfo::UnitLocation::Right;
 
-        it->second.inBuffer = true;
+        ++m_rightCounter;
         m_cv.notify_one();
         m_clear_cv.notify_all();
     }

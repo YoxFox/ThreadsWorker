@@ -5,7 +5,7 @@
 #include <map>
 #include <condition_variable>
 #include <stdexcept>
-#include <queue>
+#include <algorithm>
 
 #include "../system/constructordefines.h"
 #include "dataunit.h"
@@ -17,6 +17,13 @@
 */
 
 namespace twPro {
+
+    template <class T>
+    std::weak_ptr<T> expiredWeakPtr()
+    {
+        std::shared_ptr<T> sPtr(nullptr);
+        return sPtr;
+    }
 
     class LRDataBuffer final
     {
@@ -40,44 +47,66 @@ namespace twPro {
 
     private:
 
-        inline size_t size() { return m_leftQueue.size() + m_rightQueue.size(); }
+        inline size_t internalUnitsNumber() { return m_leftCounter + m_rightCounter; }
+
+        inline bool isLeftEmpty()
+        {
+            return m_leftCounter < 1;
+        }
+
+        inline bool isRightEmpty()
+        {
+            return m_rightCounter < 1;
+        }
 
         inline std::weak_ptr<twPro::DataUnit> leftPop()
         {
-            std::weak_ptr<twPro::DataUnit> unit = m_leftQueue.front();
-            m_leftQueue.pop();
-            return unit;
+            auto it = std::find_if(m_availableUnits.begin(), m_availableUnits.end(),
+            [](const std::pair<std::shared_ptr<twPro::DataUnit>, twPro::LRDataBuffer::DataUnitInfo> & t) -> bool {
+                return t.second.loc == twPro::LRDataBuffer::DataUnitInfo::UnitLocation::Left;
+            });
+
+            return it != m_availableUnits.end() ? it->first : expiredWeakPtr<DataUnit>();
         }
 
         inline std::weak_ptr<twPro::DataUnit> rightPop()
         {
-            std::weak_ptr<twPro::DataUnit> unit = m_rightQueue.front();
-            m_rightQueue.pop();
-            return unit;
+            auto it = std::find_if(m_availableUnits.begin(), m_availableUnits.end(),
+                [](const std::pair<std::shared_ptr<twPro::DataUnit>, twPro::LRDataBuffer::DataUnitInfo> & t) -> bool {
+                return t.second.loc == twPro::LRDataBuffer::DataUnitInfo::UnitLocation::Right;
+            });
+
+            return it != m_availableUnits.end() ? it->first : expiredWeakPtr<DataUnit>();
         }
-
-        // After clear() it is FALSE
-        bool m_isAvailable;
-
-        size_t m_bufferCapacity;
-        size_t m_bufferUnitSize;
-
-        std::queue<std::weak_ptr<twPro::DataUnit>> m_leftQueue;
-        std::queue<std::weak_ptr<twPro::DataUnit>> m_rightQueue;
 
         // Control MAP
 
         struct DataUnitInfo
         {
-            bool inBuffer;
+            enum class UnitLocation : unsigned short
+            {
+                Left = 0,
+                Right,
+                Outside
+            };
 
-            DataUnitInfo() : inBuffer(false) {}
-            DataUnitInfo(const bool _inBuffer) : inBuffer(_inBuffer) {}
+            UnitLocation loc;
+
+            DataUnitInfo() : loc(UnitLocation::Outside) {}
+            DataUnitInfo(const UnitLocation & _loc) : loc(_loc) {}
         };
 
         std::map<std::shared_ptr<twPro::DataUnit>, twPro::LRDataBuffer::DataUnitInfo> m_availableUnits;
 
         // ----
+
+        size_t m_leftCounter;
+        size_t m_rightCounter;
+
+        // After clear() it is FALSE
+        bool m_isAvailable;
+
+        size_t m_bufferCapacity;
 
         std::condition_variable m_cv;
         std::condition_variable m_clear_cv;
