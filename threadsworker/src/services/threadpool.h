@@ -11,6 +11,8 @@
 
 #include "../system/constructordefines.h"
 
+// This is TEMPORARY solution, not safety
+
 namespace twPro {
 
     class ThreadPool

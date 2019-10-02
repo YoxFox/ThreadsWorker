@@ -12,6 +12,7 @@ namespace twPro {
 
     ThreadPool::~ThreadPool() noexcept
     {
+        join();
     }
 
     size_t ThreadPool::countMaxAvailableThreads() const noexcept
