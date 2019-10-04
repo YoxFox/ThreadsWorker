@@ -181,6 +181,7 @@
     <ClInclude Include="types\lrdatabuffer.h" />
     <ClInclude Include="types\datachannel.h" />
     <ClInclude Include="types\dataunit.h" />
+    <ClInclude Include="types\result.h" />
     <ClInclude Include="types\workerstypes.h" />
   </ItemGroup>
   <ItemGroup>
