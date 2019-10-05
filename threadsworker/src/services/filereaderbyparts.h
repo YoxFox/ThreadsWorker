@@ -8,11 +8,19 @@
 #include "../system/constructordefines.h"
 #include "../types/lrdatabuffer.h"
 #include "../types/datachannel.h"
+#include "../types/result.h"
 
 // IMPORTANT: This class is single thread worker.
-//            If some thread calls work() method, other thread will wait the end of the first thread by mutex inside work() method.
+//            If some thread called work() method, other thread will wait the end of the first thread working by mutex inside work() method.
 
 namespace twPro {
+
+    enum class FILE_READER_CODES : RESULT_CODES_TYPE
+    {
+        MAIN_RESULT_CODES,
+        READING_ERROR,
+        INTERNAL_ERROR
+    };
 
     class FileReaderByParts final
     {
@@ -27,10 +35,8 @@ namespace twPro {
         void setProducerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _buffer) noexcept;
 
         // It takes all thread time. 
-        // It can be multithreadable, it can be called by different trhreads many times.
-        // It returns the control for thread by the stop flag or by some exception.
         // Stop flag: TRUE is STOP, FALSE is continue
-        void work(std::atomic_bool & _stopFlag);
+        twPro::Result<twPro::FILE_READER_CODES> work(std::atomic_bool & _stopFlag) noexcept;
 
         // True if the data producing is done, otherwise false.
         // If true, the work() method do nothing and returns immediately.

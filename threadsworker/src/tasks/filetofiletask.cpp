@@ -49,23 +49,11 @@ namespace twPro {
     {
         auto fileReaderJob = [this, &_stopFlag, &_ret]() {
 
-            try {
-                m_sourceFilePtr->work(_stopFlag);
-            }
-            catch (const std::exception& ex) {
-                _ret = false;
-                _ret.error = ex.what();
-            }
-            catch (const std::string& ex) {
-                _ret = false;
-                _ret.error = ex;
-            }
-            catch (...) {
-                _ret = false;
-                _ret.error = "File reader returns unknown error";
-            }
+            Result<FILE_READER_CODES> ret = m_sourceFilePtr->work(_stopFlag);
+            _ret = ret.toBool();
+            _ret.error = ret.text();
 
-            if (!_ret) {
+            if (!ret) {
                 _stopFlag = true;
             }
 

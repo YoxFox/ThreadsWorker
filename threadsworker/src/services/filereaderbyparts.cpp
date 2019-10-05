@@ -51,16 +51,16 @@ namespace twPro {
         m_buffer = _buffer;
     }
 
-    void FileReaderByParts::work(std::atomic_bool & _stopFlag)
+    Result<FILE_READER_CODES> FileReaderByParts::work(std::atomic_bool & _stopFlag) noexcept
     {
         std::lock_guard<std::mutex> lock(work_mutex);
 
         if (isDone()) {
-            return;
+            return FILE_READER_CODES::OK;
         }
 
         if (!m_buffer) {
-            throw std::runtime_error("Internal error: data buffer doesn't exist");
+            return { FILE_READER_CODES::INTERNAL_ERROR, "Internal error: data buffer doesn't exist" };
         }
 
         while (!_stopFlag.load()) {
@@ -91,7 +91,8 @@ namespace twPro {
             }
             catch (std::ifstream::failure e) {
                 m_buffer->left_push(unit);
-                throw e;
+                std::string eText(e.what());
+                return { FILE_READER_CODES::READING_ERROR, eText.empty() ? "Unexpected file reading error" : eText };
             }
 
             unit->id = m_idPart;
@@ -107,6 +108,8 @@ namespace twPro {
         if (m_producedDataLength >= m_fileLength) {
             m_isDone = true;
         }
+
+        return FILE_READER_CODES::OK;
     }
 
     bool FileReaderByParts::isDone() const noexcept
