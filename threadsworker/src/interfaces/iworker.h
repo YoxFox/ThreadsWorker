@@ -3,8 +3,15 @@
 
 #include <atomic>
 #include "../types/lrdatabuffer.h"
+#include "../types/result.h"
 
 namespace twPro {
+
+    enum class WORKER_CODES : RESULT_CODES_TYPE
+    {
+        MAIN_RESULT_CODES,
+        INTERNAL_ERROR
+    };
 
     class IWorker
     {
@@ -13,10 +20,9 @@ namespace twPro {
         virtual ~IWorker() noexcept {}
 
         // It takes all thread time. 
-        // It can be multithreadable, it can be called by different trhreads many times.
-        // It returns the control for thread by the stop flag or by some exception.
+        // It can be multithreadable, it can be called by different threads many times.
         // Stop flag: TRUE is STOP, FALSE is continue
-        virtual void work(std::atomic_bool & _stopFlag) = 0;
+        virtual twPro::Result<twPro::WORKER_CODES> work(std::atomic_bool & _stopFlag) noexcept = 0;
 
         // Input data buffer for consuming
         virtual void setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _cBuffer) noexcept = 0;

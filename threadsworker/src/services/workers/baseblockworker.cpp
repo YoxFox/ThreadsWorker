@@ -14,12 +14,12 @@ namespace twPro {
     {
     }
 
-    void BaseBlockWorker::work(std::atomic_bool & _stopFlag)
+    Result<WORKER_CODES> BaseBlockWorker::work(std::atomic_bool & _stopFlag) noexcept
     {
         m_isStopped.store(false);
 
         if (!m_dataSource || !m_resultStorage) {
-            throw std::runtime_error("Internal error: data buffer doesn't exist");
+            return { WORKER_CODES::INTERNAL_ERROR, "Internal error: data buffer doesn't exist" };
         }
 
         while (!_stopFlag.load()) {
@@ -37,36 +37,27 @@ namespace twPro {
                 continue;
             }
 
-            if (task_unit->dataSize > maxConsumingDataUnitSize()) {
-                m_resultStorage->left_push(result_unit);
-                throw std::runtime_error("Internal error: incorrect buffer size for source data");
-            }
-
-            size_t maxProducingDataUnitSize = maxProducingDataUnitSizeByConsumingDataUnitSize(task_unit->dataSize);
-            if (result_unit->size < maxProducingDataUnitSize) {
-                throw std::runtime_error("Internal error: incorrect buffer size for result data");
-            }
-
             auto returnResources = [this, &result_unit, &task_unit]() {
                 m_resultStorage->left_push(result_unit);
                 m_dataSource->right_push(task_unit);
             };
 
-            try {
-                doBlockWork(task_unit, result_unit);
+            if (task_unit->dataSize > maxConsumingDataUnitSize()) {
+                returnResources();
+                return { WORKER_CODES::INTERNAL_ERROR, "Internal error: incorrect buffer size for source data" };
             }
-            catch (const std::exception& ex) {
 
+            size_t maxProducingDataUnitSize = maxProducingDataUnitSizeByConsumingDataUnitSize(task_unit->dataSize);
+            if (result_unit->size < maxProducingDataUnitSize) {
                 returnResources();
-                throw ex;
+                return { WORKER_CODES::INTERNAL_ERROR, "Internal error : incorrect buffer size for result data" };
             }
-            catch (const std::string& ex) {
+
+            Result<WORKER_CODES> ret = doBlockWork(task_unit, result_unit);
+
+            if (!ret) {
                 returnResources();
-                throw ex;
-            }
-            catch (...) {
-                returnResources();
-                throw std::runtime_error("Internal error: the worker returns unknown error");
+                return ret;
             }
 
             result_unit->id = task_unit->id;
@@ -75,6 +66,8 @@ namespace twPro {
             m_dataSource->left_push(task_unit);
             m_resultStorage->right_push(result_unit);
         }
+
+        return WORKER_CODES::OK;
     }
 
     void BaseBlockWorker::setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer>& _cBuffer) noexcept

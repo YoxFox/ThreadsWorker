@@ -83,23 +83,11 @@ namespace twPro {
     {
         auto workerJob = [_worker, &_stopFlag, &_ret]() {
 
-            try {
-                _worker->work(_stopFlag);
-            }
-            catch (const std::exception& ex) {
-                _ret = false;
-                _ret.error = ex.what();
-            }
-            catch (const std::string& ex) {
-                _ret = false;
-                _ret.error = ex;
-            }
-            catch (...) {
-                _ret = false;
-                _ret.error = "Worker returns unknown error";
-            }
+            Result<WORKER_CODES> ret = _worker->work(_stopFlag);
+            _ret = ret.toBool();
+            _ret.error = ret.text();
 
-            if (!_ret) {
+            if (!ret) {
                 _stopFlag = true;
             }
 

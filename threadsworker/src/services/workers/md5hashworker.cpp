@@ -26,13 +26,15 @@ namespace twPro {
         return OUTPUT_DATA_LENGTH;
     }
 
-    void MD5HashWorker::doBlockWork(const std::shared_ptr<const twPro::DataUnit>& _dataUnit, const std::shared_ptr<twPro::DataUnit>& _resultUnit) const
+    Result<WORKER_CODES> MD5HashWorker::doBlockWork(const std::shared_ptr<const twPro::DataUnit>& _dataUnit, const std::shared_ptr<twPro::DataUnit>& _resultUnit) const noexcept
     {
         char* inputCharArray = reinterpret_cast<char*>(_dataUnit->ptr);
         char* outputCharArray = reinterpret_cast<char*>(_resultUnit->ptr);
 
         twPro_3rd::bzflag::MD5 hash_class(inputCharArray, _dataUnit->dataSize);
         hash_class.hexdigest(outputCharArray);
+
+        return WORKER_CODES::OK;
     }
 
 }

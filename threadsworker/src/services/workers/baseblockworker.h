@@ -17,9 +17,8 @@ namespace twPro {
 
         // It takes all thread time. 
         // It can be multithreadable, it can be called by different trhreads many times.
-        // It returns the control for thread by the stop flag or by some exception.
         // Stop flag: TRUE is STOP, FALSE is continue
-        void work(std::atomic_bool & _stopFlag) override;
+        twPro::Result<twPro::WORKER_CODES> work(std::atomic_bool & _stopFlag) noexcept override;
 
         // Input data buffer for consuming
         void setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _cBuffer) noexcept;
@@ -29,7 +28,7 @@ namespace twPro {
 
     protected:
 
-        virtual void doBlockWork(const std::shared_ptr<const twPro::DataUnit> & _dataUnit, const std::shared_ptr<twPro::DataUnit> & _resultUnit) const = 0;
+        virtual twPro::Result<twPro::WORKER_CODES> doBlockWork(const std::shared_ptr<const twPro::DataUnit> & _dataUnit, const std::shared_ptr<twPro::DataUnit> & _resultUnit) const noexcept = 0;
 
     private:
 
