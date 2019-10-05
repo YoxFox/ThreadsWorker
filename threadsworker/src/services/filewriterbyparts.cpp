@@ -43,12 +43,12 @@ namespace twPro {
         m_buffer = _buffer;
     }
 
-    void FileWriterByParts::work(std::atomic_bool & _stopFlag)
+    Result<FILE_WRITER_CODES> FileWriterByParts::work(std::atomic_bool & _stopFlag) noexcept
     {
         std::lock_guard<std::mutex> lock(work_mutex);
 
         if (!m_buffer) {
-            throw std::runtime_error("Internal error: data buffer doesn't exist");
+            return { FILE_WRITER_CODES::INTERNAL_ERROR, "Internal error: data buffer doesn't exist" };
         }
 
         while (!_stopFlag.load()) {
@@ -69,7 +69,8 @@ namespace twPro {
             }
             catch (std::ofstream::failure e) {
                 m_buffer->right_push(unit);
-                throw e;
+                std::string text = e.what();
+                return { FILE_WRITER_CODES::WRITING_ERROR, text.empty() ? "Unexpected file writing error" : text };
             }
 
             ++m_consumedDataBlocks;
@@ -77,6 +78,8 @@ namespace twPro {
             m_buffer->left_push(unit);
             currentConsumedDataUnits_notify(m_consumedDataBlocks);
         }
+
+        return FILE_WRITER_CODES::OK;
     }
 
     size_t FileWriterByParts::currentConsumedData() const noexcept

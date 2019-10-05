@@ -66,23 +66,11 @@ namespace twPro {
     {
         auto fileWriterJob = [this, &_stopFlag, &_ret]() {
 
-            try {
-                m_resultFilePtr->work(_stopFlag);
-            }
-            catch (const std::exception& ex) {
-                _ret = false;
-                _ret.error = ex.what();
-            }
-            catch (const std::string& ex) {
-                _ret = false;
-                _ret.error = ex;
-            }
-            catch (...) {
-                _ret = false;
-                _ret.error = "File writer returns unknown error";
-            }
+            Result<FILE_WRITER_CODES> ret = m_resultFilePtr->work(_stopFlag);
+            _ret = ret.toBool();
+            _ret.error = ret.text();
 
-            if (!_ret) {
+            if (!ret) {
                 _stopFlag = true;
             }
 
