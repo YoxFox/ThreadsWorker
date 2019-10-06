@@ -18,18 +18,21 @@ namespace twPro {
         COPY_FORBIDDEN(FileToFileTask)
 
         // Steps for template
-        virtual void preCheck(const twPro::SourceToResultTemplateTask_params & _params);
-        virtual void setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr);
-        virtual std::function<void()> prepareSourceJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret);
-        virtual std::function<void()> prepareResultJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret);
-        virtual std::function<void()> prepareWorkerJob(std::shared_ptr<twPro::IWorker> _worker, std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret);
-        virtual void setupNotifiers(twPro::DataChannel & _channel, std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret);
-        virtual void clear();
+        virtual twPro::Result<twPro::TASK_CODES> preCheck(const twPro::SourceToResultTemplateTask_params & _params) noexcept;
+        virtual twPro::Result<twPro::TASK_CODES> setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr) noexcept;
+        virtual std::function<void()> prepareSourceJob(std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept;
+        virtual std::function<void()> prepareResultJob(std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept;
+        virtual std::function<void()> prepareWorkerJob(std::shared_ptr<twPro::IWorker> _worker, std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept;
+        virtual void setupNotifiers(twPro::DataChannel & _channel, std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept;
+        virtual void clear() noexcept;
 
     protected:
 
-        virtual size_t totalData() const;
-        virtual size_t totalWriteDataUnits() const;
+        twPro::RetVal<twPro::TASK_CODES, std::shared_ptr<twPro::FileReaderByParts>> createFileReader(const std::string & _filePath) const noexcept;
+        twPro::RetVal<twPro::TASK_CODES, std::shared_ptr<twPro::FileWriterByParts>> createFileWriter(const std::string & _filePath) const noexcept;
+
+        virtual size_t totalData() const noexcept;
+        virtual size_t totalWriteDataUnits() const noexcept;
 
         std::shared_ptr<twPro::FileReaderByParts> m_sourceFilePtr;
         std::shared_ptr<twPro::FileWriterByParts> m_resultFilePtr;

@@ -60,24 +60,16 @@ namespace twPro {
         std::atomic_bool stopFlag = false;
 
         std::thread ct([&task, &stopFlag, &interactive]() {
-            try {
-                task->run(stopFlag);
+
+            auto ret = task->run(stopFlag);
+
+            if (ret) {
+                interactive->pushMessage("The task is successfully done", IInteractive::MessageType::INFO_m);
             }
-            catch (const std::exception& ex) {
-                interactive->pushMessage(ex.what(), IInteractive::MessageType::ERROR_m);
-                return;
-            }
-            catch (const std::string& ex) {
-                interactive->pushMessage(ex, IInteractive::MessageType::ERROR_m);
-                return;
-            }
-            catch (...) {
-                interactive->pushMessage("The task returns unknown error", IInteractive::MessageType::ERROR_m);
-                return;
+            else {
+                interactive->pushMessage("The task failed", IInteractive::MessageType::WARNING_m);
             }
 
-            // TODO: May be it's not good to show it if the task is not fully completed by some internal errors
-            interactive->pushMessage("The task is successfully done", IInteractive::MessageType::INFO_m);
         });
 
         ct.join();
