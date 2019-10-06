@@ -9,8 +9,7 @@ namespace twPro {
     enum class TASK_CODES : RESULT_CODES_TYPE
     {
         MAIN_RESULT_CODES,
-        INTERNAL_ERROR,
-
+        INTERNAL_ERROR
     };
 
     class ITask
