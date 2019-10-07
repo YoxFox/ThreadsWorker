@@ -32,35 +32,24 @@ namespace twPro {
             m_worker = _worker;
         }
 
-        void run(std::atomic_bool & _stopFlag) override;
+        twPro::Result<twPro::TASK_CODES> run(std::atomic_bool & _stopFlag) noexcept override;
 
     protected:
 
-        // Replace it by common result object
-        struct _pResult
-        {
-            std::string error;
-            bool isError;
-
-            inline operator bool() const { return !isError; }
-
-            _pResult(const std::string & _message) : error(_message), isError(true) {}
-            _pResult() : isError(false) {}
-            _pResult(const bool _ret) : isError(!_ret) {}
-        };
-
         // Steps for template
-        virtual void preCheck(const twPro::SourceToResultTemplateTask_params & _params) = 0;
-        virtual void setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr) = 0;
-        virtual std::function<void()> prepareSourceJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
-        virtual std::function<void()> prepareResultJob(std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
-        virtual std::function<void()> prepareWorkerJob(std::shared_ptr<twPro::IWorker> _worker, std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
-        virtual void setupNotifiers(twPro::DataChannel & _channel, std::atomic_bool & _stopFlag, SourceToResultTemplateTask::_pResult & _ret) = 0;
-        virtual void clear() = 0;
+        virtual twPro::Result<twPro::TASK_CODES> preCheck(const twPro::SourceToResultTemplateTask_params & _params) noexcept = 0;
+        virtual twPro::Result<twPro::TASK_CODES> setupSources(std::shared_ptr<twPro::LRDataBuffer> _sourceBufferPtr, std::shared_ptr<twPro::LRDataBuffer> _resultBufferPtr) noexcept = 0;
+        virtual std::function<void()> prepareSourceJob(std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept = 0;
+        virtual std::function<void()> prepareResultJob(std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept = 0;
+        virtual std::function<void()> prepareWorkerJob(std::shared_ptr<twPro::IWorker> _worker, std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept = 0;
+        virtual void setupNotifiers(twPro::DataChannel & _channel, std::atomic_bool & _stopFlag, twPro::Result<twPro::TASK_CODES> & _ret) noexcept = 0;
+        virtual void clear() noexcept = 0;
 
-        inline twPro::SourceToResultTemplateTask_params parameters() const { return m_params; }
+        inline twPro::SourceToResultTemplateTask_params parameters() const noexcept { return m_params; }
 
     private:
+
+        twPro::RetVal<twPro::TASK_CODES, std::shared_ptr<twPro::LRDataBuffer>> createBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize) const noexcept;
 
         twPro::SourceToResultTemplateTask_params m_params;
         std::shared_ptr<twPro::IWorker> m_worker;

@@ -2,6 +2,7 @@
 #define __RESULT_H__
 
 #include <string>
+#include <tuple>
 
 #define RESULT_CODES_TYPE unsigned int
 
@@ -30,7 +31,7 @@ namespace twPro {
 
         inline Result& operator=(const RC & _code) { m_resultCode = _code; return *this; }
         inline Result& operator=(const bool _bool) { m_resultCode = _bool ? RC::OK : RC::ERROR; return *this; }
-        inline Result& operator=(const std::pair<RC, std::string> & _pair) { m_resultCode = _pair.first; m_text = _pair.second; return *this; }
+        inline Result& operator=(const std::tuple<RC, std::string> & _tuple) { m_resultCode = std::get<RC>(_tuple); m_text = std::get<std::string>(_tuple); return *this; }
 
         inline RC code() const { return m_resultCode; }
         inline std::string text() const { return m_text; }

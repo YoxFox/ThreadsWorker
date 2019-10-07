@@ -21,7 +21,7 @@ namespace twPro {
 
     private:
 
-        void doBlockWork(const std::shared_ptr<const twPro::DataUnit> & _dataUnit, const std::shared_ptr<twPro::DataUnit> & _resultUnit) const override;
+        twPro::Result<twPro::WORKER_CODES> doBlockWork(const std::shared_ptr<const twPro::DataUnit> & _dataUnit, const std::shared_ptr<twPro::DataUnit> & _resultUnit) const noexcept override;
 
     };
 

@@ -3,6 +3,8 @@
 #include "../services/threadpool.h"
 #include "../system/interactivefactory.h"
 
+#undef ERROR
+
 namespace twPro {
 
     SourceToResultTemplateTask::SourceToResultTemplateTask(const SourceToResultTemplateTask_params & _params) noexcept :
@@ -14,22 +16,48 @@ namespace twPro {
     {
     }
 
-    void SourceToResultTemplateTask::run(std::atomic_bool & _stopFlag)
+    Result<TASK_CODES> SourceToResultTemplateTask::run(std::atomic_bool & _stopFlag) noexcept
     {
         // We forbid to run it from different places at the time
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        preCheck(m_params);
+        Result<TASK_CODES> ret = true;
+
+        ret = preCheck(m_params);
+
+        if (!ret) {
+            interactive()->pushMessage(!ret.text().empty() ? ret.text() : "Unknown internal error", IInteractive::MessageType::ERROR_m);
+            return ret;
+        }
 
         // === SETUP RESOURCES  ===
 
         ThreadPool tPool;
         size_t curAvailableThreads = tPool.countMaxAvailableThreads();
 
-        m_sourceBufferPtr.reset(new twPro::LRDataBuffer(2 * curAvailableThreads, m_params.blockSize));
-        m_resultBufferPtr.reset(new twPro::LRDataBuffer(2 * curAvailableThreads, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize)));
+        auto sourceBuffer_RetVal = createBuffer(2 * curAvailableThreads, m_params.blockSize);
 
-        setupSources(m_sourceBufferPtr, m_resultBufferPtr);
+        if (!sourceBuffer_RetVal.result) {
+            interactive()->pushMessage(!sourceBuffer_RetVal.result.text().empty() ? sourceBuffer_RetVal.result.text() : "Unknown internal error", IInteractive::MessageType::ERROR_m);
+            return sourceBuffer_RetVal.result;
+        }
+
+        auto resultBuffer_RetVal = createBuffer(2 * curAvailableThreads, m_worker->maxProducingDataUnitSizeByConsumingDataUnitSize(m_params.blockSize));
+
+        if (!resultBuffer_RetVal.result) {
+            interactive()->pushMessage(!resultBuffer_RetVal.result.text().empty() ? resultBuffer_RetVal.result.text() : "Unknown internal error", IInteractive::MessageType::ERROR_m);
+            return resultBuffer_RetVal.result;
+        }
+
+        m_sourceBufferPtr = sourceBuffer_RetVal.value;
+        m_resultBufferPtr = resultBuffer_RetVal.value;
+
+        ret = setupSources(m_sourceBufferPtr, m_resultBufferPtr);
+
+        if (!ret) {
+            interactive()->pushMessage(!ret.text().empty() ? ret.text() : "Unknown internal error", IInteractive::MessageType::ERROR_m);
+            return ret;
+        }
 
         m_worker->setConsumerBuffer(m_sourceBufferPtr);
         m_worker->setProducerBuffer(m_resultBufferPtr);
@@ -37,7 +65,6 @@ namespace twPro {
         // === RUN WORKERS IN THREADS ===
 
         std::atomic_bool stopFlag = false;
-        _pResult ret = true;
 
         auto fileReaderJob = prepareSourceJob(stopFlag, ret);
         auto fileWriterJob = prepareResultJob(stopFlag, ret);
@@ -65,8 +92,7 @@ namespace twPro {
         });
 
         if (!ret) {
-            interactive()->pushMessage(ret.error.empty() ? ret.error : "Unknown internal error",
-                IInteractive::MessageType::ERROR_m);
+            interactive()->pushMessage(!ret.text().empty() ? ret.text() : "Unknown internal error", IInteractive::MessageType::ERROR_m);
         }
 
         stopFlag = true;
@@ -84,6 +110,24 @@ namespace twPro {
         m_worker.reset();
 
         tPool.join();
+
+        return ret;
+    }
+
+    twPro::RetVal<twPro::TASK_CODES, std::shared_ptr<twPro::LRDataBuffer>> SourceToResultTemplateTask::createBuffer(const size_t _bufferCapacity, const size_t _bufferUnitSize) const noexcept
+    {
+        RetVal<TASK_CODES, std::shared_ptr<twPro::LRDataBuffer>> retVal;
+        retVal.result = true;
+
+        try {
+            retVal.value.reset(new twPro::LRDataBuffer(_bufferCapacity, _bufferUnitSize));
+        }
+        catch (std::exception e) {
+            std::string text(e.what());
+            retVal.result = std::make_tuple(TASK_CODES::ERROR, text.empty() ? "Buffer returns unexpected error" : text);
+        }
+
+        return retVal;
     }
 
 }

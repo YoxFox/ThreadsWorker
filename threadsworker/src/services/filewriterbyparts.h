@@ -9,11 +9,19 @@
 #include "../system/constructordefines.h"
 #include "../types/lrdatabuffer.h"
 #include "../types/datachannel.h"
+#include "../types/result.h"
 
 // IMPORTANT: This class is single thread worker.
 //            If some thread calls work() method, other thread will wait the end of the first thread by mutex inside work() method.
 
 namespace twPro {
+
+    enum class FILE_WRITER_CODES : RESULT_CODES_TYPE
+    {
+        MAIN_RESULT_CODES,
+        WRITING_ERROR,
+        INTERNAL_ERROR
+    };
 
     class FileWriterByParts final
     {
@@ -28,7 +36,7 @@ namespace twPro {
         void setConsumerBuffer(const std::shared_ptr<twPro::LRDataBuffer> & _buffer) noexcept;
 
         // Working with producing some data. It takes all thread time.
-        void work(std::atomic_bool & _stopFlag);
+        twPro::Result<twPro::FILE_WRITER_CODES> work(std::atomic_bool & _stopFlag) noexcept;
 
         size_t currentConsumedData() const noexcept;
         size_t currentConsumedDataUnits() const noexcept;
